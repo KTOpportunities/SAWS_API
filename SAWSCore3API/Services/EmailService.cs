@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using SAWSCore3API.DBModels;
+using SAWSCore3API.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

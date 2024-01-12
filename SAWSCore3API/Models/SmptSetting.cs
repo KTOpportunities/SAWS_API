@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SAWSCore3API.DBModels
+namespace SAWSCore3API.Models
 {
     [NotMapped]
     public class SmptSetting
