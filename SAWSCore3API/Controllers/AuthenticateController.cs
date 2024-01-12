@@ -22,6 +22,7 @@ using SAWSCore3API.Models;
 using SAWSCore3API.DBModels;
 using SAWSCore3API.Authentication;
 using SAWSCore3API.Services;
+using SAWSCore3API.Logic;
 
 namespace SAWSCore3API.Controllers
 {
@@ -161,6 +162,74 @@ namespace SAWSCore3API.Controllers
             }
             return statusCode;
         }
+
+
+
+        [AllowAnonymous]
+        [HttpPost("RegisterSubscriber")]
+        public async Task<IActionResult> RegisterSubscriber(RegisterSubscriberModel appUser)
+        {
+            ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+
+            //register functionality  
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = appUser.Username,
+                    Email = appUser.Email,
+
+                };
+
+                var result = await userManager.CreateAsync(user, appUser.Password);
+
+                if (!await roleManager.RoleExistsAsync("Admin"))
+                    await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+                if (!await roleManager.RoleExistsAsync("Subscriber"))
+                    await roleManager.CreateAsync(new IdentityRole("Subscriber"));
+
+                if (result.Succeeded)
+                {
+
+                    await userManager.AddToRoleAsync(user, appUser.UserRole);
+
+                    statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
+
+
+                    
+                    //create 
+                    try
+                    {
+                        UserProfile userProfile = new UserProfile();
+                        userProfile.userprofileid = 0;
+                        userProfile.fullname = appUser.Fullname;
+                        userProfile.email = appUser.Email;
+                        //userProfile.mobilenumber = appUser.mo
+                        userProfile.aspuid = user.Id;
+                        userProfile.userrole = appUser.UserRole;
+                        DBLogic logic = new DBLogic(_context);
+                        logic.InsertUpdateUserProfile(userProfile);
+                    }
+                    catch (Exception err)
+                    { 
+                      //error creating user profile, but login was successfull
+                    }
+                }
+
+                if (!result.Succeeded)
+                {
+                    statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User creation unsuccessful:", Detail = result });
+                    // return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+                }
+            }
+            if (!ModelState.IsValid)
+            {
+                statusCode = StatusCode(StatusCodes.Status422UnprocessableEntity, new Response { Status = "Error", Message = "Model state is invalid , please check model" });
+            }
+            return statusCode;
+        }
+
         //[ValidateAntiForgeryToken]
         [AllowAnonymous]
         [HttpPost("Logout")]
@@ -284,5 +353,21 @@ namespace SAWSCore3API.Controllers
 
             return Unauthorized(new { response = "Invalid email" });
         }
+
+        [HttpGet("LoginUserNameExist")]
+        public async Task<IActionResult> LoginUserNameExist(string username)
+        {
+            var user = await userManager.FindByNameAsync(username);
+
+            if (user != null)
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return Ok(false);
+            }
+        }
+
     }
 }
