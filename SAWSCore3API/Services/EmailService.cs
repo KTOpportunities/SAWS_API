@@ -5,6 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MimeKit;
+using MimeKit.Text;
+using MimeKit.Utils;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+
 
 namespace SAWSCore3API.Services
 {
@@ -67,6 +73,44 @@ namespace SAWSCore3API.Services
 
         public void Send(string to, string orgname, string fname, string lname)
         { 
+        }
+
+        public void SendPasswordResetEmail(string to, string htmlBody)
+        {
+            if (_appSettings == null)
+            {
+                throw new Exception("Error reading email settings");
+            }
+
+
+            try
+            {
+
+
+                var mailMessage = new MimeMessage();
+                mailMessage.From.Add(new MailboxAddress("South African Weather Service", _appSettings.from));
+                mailMessage.To.Add(new MailboxAddress(to, to));
+                mailMessage.Subject = "South African Weather Service forgot/reset password request";
+
+                mailMessage.Body = new TextPart("html")
+                {
+                    Text = htmlBody
+                };
+
+                using (var smtpClient = new SmtpClient())
+                {
+                    smtpClient.Connect(_appSettings.host, _appSettings.Port, _appSettings.enableSsl);
+                    smtpClient.Authenticate(_appSettings.userName, _appSettings.Password);
+                    smtpClient.Send(mailMessage);
+                    smtpClient.Disconnect(true);
+                }
+
+            }
+            catch (Exception err)
+            {
+
+            }
+
         }
 
 

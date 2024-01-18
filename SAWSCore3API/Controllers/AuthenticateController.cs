@@ -218,16 +218,17 @@ namespace SAWSCore3API.Controllers
                 var validResetToken = Uri.EscapeDataString(WebEncoders.Base64UrlEncode(resetTokenGeneratedBytes));
 
                 //var appUrl = _configuration["AppURL"]; //"http://localhost:4200/#/reset-password";//get URL from config
-                var appUrl = _configuration["AppURL"];
+                //var appUrl = _configuration["AppURL"];
 
+                var appUrl = "http://localhost:4200/";
                 string resetUrl = appUrl + @"#/reset-password?email=" + email + "&token=" + validResetToken;
 
-                string resetEmailBody = $"<h1>Rize Mzanzi password reset request</h1>" + $"<p>Please confirm your email by <a href='{resetUrl}'>Clicking here</a></p>";
+                string resetEmailBody = $"<h1>South African Weather Service</h1>" + $"<p>to reset your password <a href='{resetUrl}'>Clicking here</a></p>";
 
                 try
                 {
                     EmailService emailService = new EmailService(_configuration);
-                    //emailService.SendPasswordResetEmail(user.Email, resetEmailBody);
+                    emailService.SendPasswordResetEmail(user.Email, resetEmailBody);
                 }
                 catch (Exception err)
                 {
@@ -280,6 +281,58 @@ namespace SAWSCore3API.Controllers
                     return Unauthorized(errros);
                     //return Ok("Password reset");
                 }
+            }
+
+            return Unauthorized(new { response = "Invalid email" });
+        }
+
+        [HttpPost("MobileRequestPasswordReset")]
+        public async Task<IActionResult> MobileRequestPasswordReset(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return NotFound();
+            }
+
+            var user = await userManager.FindByNameAsync(email);
+
+            if (user == null)
+            {
+                return Unauthorized(new { response = "Invalid email" });
+            }
+
+
+            if (user != null)
+            {
+                var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                //Generate email with the new token
+                byte[] resetTokenGeneratedBytes = Encoding.UTF8.GetBytes(resetToken);
+                var validResetToken = Uri.EscapeDataString(WebEncoders.Base64UrlEncode(resetTokenGeneratedBytes));
+
+                //var appUrl = _configuration["AppURL"]; //"http://localhost:4200/#/reset-password";//get URL from config
+                //var appUrl = _configuration["AppURL"];
+
+                var appUrl = "http://localhost:4200/";
+                string resetUrl = appUrl + @"#/reset-password?email=" + email + "&token=" + validResetToken;
+
+                string resetEmailBody = $"<h1>South African Weather Service</h1>" + $"<p>to reset your password <a href='{resetUrl}'>Clicking here</a></p>";
+
+                try
+                {
+                    EmailService emailService = new EmailService(_configuration);
+                    emailService.SendPasswordResetEmail(user.Email, resetEmailBody);
+                }
+                catch (Exception err)
+                {
+
+                }
+
+                return Ok(new
+                {
+                    resetToken = validResetToken,
+                    resetUrl = resetUrl
+                });
             }
 
             return Unauthorized(new { response = "Invalid email" });
