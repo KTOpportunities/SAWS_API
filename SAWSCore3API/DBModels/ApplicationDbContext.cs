@@ -32,5 +32,7 @@ namespace SAWSCore3API.DBModels
         //}
 
         public DbSet<ApplicationUser> User { get; set; }
+        public DbSet<UserProfile> userProfiles { get; set; }
+
     }
 }

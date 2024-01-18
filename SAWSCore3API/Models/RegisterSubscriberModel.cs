@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 namespace SAWSCore3API.Models
 {
     [NotMapped]
-    public class RegisterModel
+    public class RegisterSubscriberModel
     {
+        [Required(ErrorMessage = "Full Name is required")]
+        public string Fullname { get; set; }
+
         [Required(ErrorMessage = "User Name is required")]
         public string Username { get; set; }
 
