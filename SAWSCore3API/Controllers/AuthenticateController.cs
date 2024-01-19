@@ -108,8 +108,12 @@ namespace SAWSCore3API.Controllers
                 }
                 else
                 {
-                    statusCode = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "500", Message = "Please check your password and username" });
+                    statusCode = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "401", Message = "Please check your password and username" });
                 }
+            }
+            else if(user == null) {
+
+                statusCode = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "401", Message = "Please check your password and username" });
             }
             else
             {
