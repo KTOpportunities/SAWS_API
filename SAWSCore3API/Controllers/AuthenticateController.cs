@@ -234,7 +234,29 @@ namespace SAWSCore3API.Controllers
             return statusCode;
         }
 
-        //[ValidateAntiForgeryToken]
+        [Authorize]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUserProfileById(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                DBLogic logic = new DBLogic(_context);
+                logic.DeleteUserProfileById(id);
+                return Ok();
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
+        }
+
+
         [AllowAnonymous]
         [HttpPost("Logout")]
         public async Task<IActionResult> LogOut(string username, string password)
