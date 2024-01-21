@@ -235,6 +235,33 @@ namespace SAWSCore3API.Controllers
         }
 
         [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> InsertUpdateUserProfile(UserProfile userProfile)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+
+            try
+            {
+                DBLogic logic = new DBLogic(_context);
+                logic.InsertUpdateUserProfile(userProfile);
+
+                return Ok(userProfile);
+
+            }
+            catch (Exception err)
+            { 
+            
+            }
+
+            return BadRequest();
+
+        }
+
+        [Authorize]
         [HttpDelete]
         public async Task<IActionResult> DeleteUserProfileById(int id)
         {
