@@ -339,10 +339,10 @@ namespace SAWSCore3API.Controllers
                 byte[] resetTokenGeneratedBytes = Encoding.UTF8.GetBytes(resetToken);
                 var validResetToken = Uri.EscapeDataString(WebEncoders.Base64UrlEncode(resetTokenGeneratedBytes));
 
-                //var appUrl = _configuration["AppURL"]; //"http://localhost:4200/#/reset-password";//get URL from config
+                //var appUrl = _configuration["AppURL"]; //"http://localhost:4200/aviationappapi#/reset-password";//get URL from config
                 //var appUrl = _configuration["AppURL"];
 
-                var appUrl = "http://localhost:4200/";
+                var appUrl = "http://localhost:4200/aviationappapi";
                 string resetUrl = appUrl + @"#/reset-password?email=" + email + "&token=" + validResetToken;
 
                 string resetEmailBody = $"<h1>South African Weather Service</h1>" + $"<p>to reset your password <a href='{resetUrl}'>Clicking here</a></p>";
