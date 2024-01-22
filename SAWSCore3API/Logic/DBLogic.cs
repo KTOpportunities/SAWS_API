@@ -72,5 +72,48 @@ namespace SAWSCore3API.Logic
             }
         }
 
+        public void DeleteUserProfileById(int id)
+        {
+
+            bool insertMode = id == 0;
+
+            var record = _context.userProfiles.Where(d => d.userprofileid == id).FirstOrDefault();
+
+            try
+            {
+                if (record != null)
+                {
+                    if (insertMode)
+                    {
+                        record.created_at = DateTime.Now;
+                        //_context.manualrequests.Add(manrequest);
+                    }
+                    else
+                    {
+                        record.isdeleted = true;
+                        record.deleted_at = DateTime.Now;
+                        var local = _context.Set<UserProfile>()
+                    .Local
+                    .FirstOrDefault(f => f.userprofileid == id);
+                        if (local != null)
+                        {
+                            _context.Entry(local).State = EntityState.Detached;
+                        }
+                        _context.Entry(record).State = EntityState.Modified;
+                    }
+
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception err)
+            {
+                string errMessage = err.Message;
+                // Write to log
+
+                throw;
+            }
+        }
+
+
     }
 }
