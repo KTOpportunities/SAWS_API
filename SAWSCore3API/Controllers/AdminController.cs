@@ -80,7 +80,7 @@ namespace SAWSCore3API.Controllers
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)
                .ToList();
-                var totalRecords = _context.userProfiles.Where(d => d.isdeleted == false).Count();
+                var totalRecords = _context.userProfiles.Where(d => d.isdeleted == false && d.userrole=="Admin").Count();
 
                 //return Ok(new PagedResponse<List<cbbuser>>(pagedData, validFilter.PageNumber, validFilter.PageSize));
                 var pagedReponse = PaginationHelper.CreatePagedReponse<UserProfile>(pagedData, validFilter, totalRecords, uriService, route);
