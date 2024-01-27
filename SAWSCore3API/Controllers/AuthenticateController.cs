@@ -112,6 +112,7 @@ namespace SAWSCore3API.Controllers
                         token = new JwtSecurityTokenHandler().WriteToken(token)
                         ,expiration = token.ValidTo
                         ,aspUserID  = user.Id.ToString()
+                        ,aspUserName = user.UserName
                         ,rolesList  = rolesList
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
