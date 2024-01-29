@@ -349,7 +349,7 @@ namespace SAWSCore3API.Controllers
                 return NotFound();
             }
 
-            var user = await userManager.FindByNameAsync(email);
+            var user = await userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
