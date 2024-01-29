@@ -64,8 +64,9 @@ namespace SAWSCore3API.Controllers
         {
             ApplicationUser user = null;
 
-            user = _context.User.Where(user => user.UserName == appUser.Username).SingleOrDefault();
+            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Username).SingleOrDefault();
 
+            
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
 
             if (user != null)
@@ -175,62 +176,74 @@ namespace SAWSCore3API.Controllers
         {
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
 
-            //register functionality  
-            if (ModelState.IsValid)
+            ApplicationUser user = null;
+
+            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Username).SingleOrDefault();
+
+            if (user == null)
             {
-                var user = new ApplicationUser
+                //register functionality  
+                if (ModelState.IsValid)
                 {
-                    UserName = appUser.Username,
-                    Email = appUser.Email,
-
-                };
-
-                var result = await userManager.CreateAsync(user, appUser.Password);
-
-                if (!await roleManager.RoleExistsAsync("Admin"))
-                    await roleManager.CreateAsync(new IdentityRole("Admin"));
-
-                if (!await roleManager.RoleExistsAsync("Subscriber"))
-                    await roleManager.CreateAsync(new IdentityRole("Subscriber"));
-
-                if (result.Succeeded)
-                {
-
-                    await userManager.AddToRoleAsync(user, appUser.UserRole);
-
-                    statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
-
-
-                    
-                    //create 
-                    try
+                    user = new ApplicationUser
                     {
-                        UserProfile userProfile = new UserProfile();
-                        userProfile.userprofileid = 0;
-                        userProfile.fullname = appUser.Fullname;
-                        userProfile.email = appUser.Email;
-                        //userProfile.mobilenumber = appUser.mo
-                        userProfile.aspuid = user.Id;
-                        userProfile.userrole = appUser.UserRole;
-                        DBLogic logic = new DBLogic(_context);
-                        logic.InsertUpdateUserProfile(userProfile);
-                    }
-                    catch (Exception err)
-                    { 
-                      //error creating user profile, but login was successfull
-                    }
-                }
+                        UserName = appUser.Username,
+                        Email = appUser.Email,
 
-                if (!result.Succeeded)
+                    };
+
+                    var result = await userManager.CreateAsync(user, appUser.Password);
+
+                    if (!await roleManager.RoleExistsAsync("Admin"))
+                        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+                    if (!await roleManager.RoleExistsAsync("Subscriber"))
+                        await roleManager.CreateAsync(new IdentityRole("Subscriber"));
+
+                    if (result.Succeeded)
+                    {
+
+                        await userManager.AddToRoleAsync(user, appUser.UserRole);
+
+                        statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
+
+
+
+                        //create 
+                        try
+                        {
+                            UserProfile userProfile = new UserProfile();
+                            userProfile.userprofileid = 0;
+                            userProfile.fullname = appUser.Fullname;
+                            userProfile.email = appUser.Email;
+                            //userProfile.mobilenumber = appUser.mo
+                            userProfile.aspuid = user.Id;
+                            userProfile.userrole = appUser.UserRole;
+                            DBLogic logic = new DBLogic(_context);
+                            logic.InsertUpdateUserProfile(userProfile);
+                        }
+                        catch (Exception err)
+                        {
+                            //error creating user profile, but login was successfull
+                        }
+                    }
+
+                    if (!result.Succeeded)
+                    {
+                        statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User creation unsuccessful:", Detail = result });
+                        // return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+                    }
+                }
+                if (!ModelState.IsValid)
                 {
-                    statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User creation unsuccessful:", Detail = result });
-                    // return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+                    statusCode = StatusCode(StatusCodes.Status422UnprocessableEntity, new Response { Status = "Error", Message = "Model state is invalid , please check model" });
                 }
             }
-            if (!ModelState.IsValid)
+            else
             {
-                statusCode = StatusCode(StatusCodes.Status422UnprocessableEntity, new Response { Status = "Error", Message = "Model state is invalid , please check model" });
+                   statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "Error", Message = "User Exists" });
             }
+
             return statusCode;
         }
 
