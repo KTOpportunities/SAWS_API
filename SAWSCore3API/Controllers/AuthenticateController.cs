@@ -87,6 +87,10 @@ namespace SAWSCore3API.Controllers
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
 
+                var userRoles = await userManager.GetRolesAsync(user);
+                List<string> roles = (List<string>)userRoles;
+                string rolesList = string.Join(",", roles.ToArray());
+
                 //User toReturn = new User();
 
                 //toReturn.Id = user.Id;
@@ -104,17 +108,25 @@ namespace SAWSCore3API.Controllers
                 //userObj = _context.users.Where(d => d.id == usermap.userid).SingleOrDefault();
                 if (signInResult.Succeeded)
                 {
-
-                    statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
+                    return Ok(new
+                    {
+                        token = new JwtSecurityTokenHandler().WriteToken(token)
+                        ,expiration = token.ValidTo
+                        ,aspUserID  = user.Id.ToString()
+                        ,aspUserName = user.UserName
+                        ,rolesList  = rolesList
+                    });
+                    //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
                 }
                 else
                 {
-                    statusCode = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "401", Message = "Please check your password and username" });
+                    return Unauthorized(signInResult);
+                    //statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "401", Message = "Please check your password and username" });
                 }
             }
             else if(user == null) {
 
-                statusCode = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "401", Message = "Please check your password and username" });
+                statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "401", Message = "Please check your password and username" });
             }
             else
             {
@@ -248,7 +260,8 @@ namespace SAWSCore3API.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        //[AllowAnonymous]
+        [HttpPost("InsertUpdateUserProfile")]
         public async Task<IActionResult> InsertUpdateUserProfile(UserProfile userProfile)
         {
             if (!ModelState.IsValid)
@@ -275,7 +288,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [Authorize]
-        [HttpDelete]
+        [HttpDelete("DeleteUserProfileById")]
         public async Task<IActionResult> DeleteUserProfileById(int id)
         {
             if (!ModelState.IsValid)
