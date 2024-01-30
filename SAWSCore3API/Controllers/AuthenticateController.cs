@@ -190,7 +190,7 @@ namespace SAWSCore3API.Controllers
 
             ApplicationUser user = null;
 
-            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Username).SingleOrDefault();
+            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Email).SingleOrDefault();
 
             if (user == null)
             {
