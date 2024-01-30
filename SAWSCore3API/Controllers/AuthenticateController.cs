@@ -368,10 +368,10 @@ namespace SAWSCore3API.Controllers
                 //var appUrl = _configuration["AppURL"]; //"http://localhost:4200/aviationappapi#/reset-password";//get URL from config
                 //var appUrl = _configuration["AppURL"];
 
-                var appUrl = "http://localhost:4200/aviationappapi";
+                var appUrl = "http://qa.j-cred.co.za/aviationapp/aviationappapi#/reset-password";
                 string resetUrl = appUrl + @"#/reset-password?email=" + email + "&token=" + validResetToken;
 
-                string resetEmailBody = $"<h1>South African Weather Service</h1>" + $"<p>to reset your password <a href='{resetUrl}'>Clicking here</a></p>";
+                string resetEmailBody = $"<h1>South African Weather Service</h1>" + $"<p>to reset your password <a href='{resetUrl}'>Click here</a></p>";
 
                 try
                 {
