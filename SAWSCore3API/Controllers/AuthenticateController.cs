@@ -275,6 +275,38 @@ namespace SAWSCore3API.Controllers
                 DBLogic logic = new DBLogic(_context);
                 logic.InsertUpdateUserProfile(userProfile);
 
+                //update identity email
+                try {
+                    var aspIdentityId = userProfile.aspuid;
+
+                    if (!String.IsNullOrEmpty(aspIdentityId))
+                    {
+                        var user = await userManager.FindByIdAsync(aspIdentityId);
+                        if (user != null)
+                        {
+                            user.Email = userProfile.email;
+                            user.UserName = userProfile.email;
+
+                            var result = await userManager.UpdateAsync(user);
+
+
+                            if (result.Succeeded)
+                            {
+                                //return RedirectToAction("Account");
+                            }
+                            else
+                            {
+                               
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception err)
+                { 
+
+                }
+
                 return Ok(userProfile);
 
             }
