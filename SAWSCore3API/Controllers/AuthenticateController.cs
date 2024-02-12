@@ -114,6 +114,7 @@ namespace SAWSCore3API.Controllers
                         ,expiration = token.ValidTo
                         ,aspUserID  = user.Id.ToString()
                         ,aspUserName = user.UserName
+                        ,aspUserEmail = user.Email
                         ,rolesList  = rolesList
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
@@ -366,10 +367,32 @@ namespace SAWSCore3API.Controllers
         {
 
 
-            //var users = userManager.Users.Where(d => d.deleted == false);
-            
+            var users = userManager.Users;
 
+            if (users != null)
+            {
+            return Ok(users);
+            }            
+            
             return Unauthorized(new { response = "Invalid users" });
+
+        }
+
+        [Authorize]
+        [HttpGet("GetLoggedInUser")]
+        public async Task<IActionResult> GetLoggedInUser(string Id)
+        {
+
+            var user = await userManager.FindByIdAsync(Id);
+
+            if (user != null)
+            {
+                return Ok(user);
+            }
+            else
+            {
+                return NotFound(new { response = "User not found" });
+            }
         }
 
 
