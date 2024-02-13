@@ -387,7 +387,17 @@ namespace SAWSCore3API.Controllers
 
             if (user != null)
             {
-                return Ok(user);
+                var userRoles = await userManager.GetRolesAsync(user);
+                List<string> roles = (List<string>)userRoles;
+                string rolesList = string.Join(",", roles.ToArray());
+
+                return Ok(new
+                    {
+                        userID  = user.Id.ToString(),
+                        userName = user.UserName,
+                        userEmail = user.Email,
+                        userRole  = rolesList
+                    });
             }
             else
             {
