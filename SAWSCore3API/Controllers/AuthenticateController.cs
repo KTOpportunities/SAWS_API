@@ -64,7 +64,9 @@ namespace SAWSCore3API.Controllers
         {
             ApplicationUser user = null;
 
-            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Username).SingleOrDefault();
+            user = _context.User
+                    .Where(user => (user.UserName == appUser.Username || user.Email == appUser.Username) && user.IsActive == true)
+                    .SingleOrDefault();
 
             
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -150,6 +152,7 @@ namespace SAWSCore3API.Controllers
                 {
                     UserName = appUser.Username,
                     Email = appUser.Email,
+                    IsActive = true,
                     
                 };
 
@@ -322,7 +325,7 @@ namespace SAWSCore3API.Controllers
 
         [Authorize]
         [HttpDelete("DeleteUserProfileById")]
-        public async Task<IActionResult> DeleteUserProfileById(int id)
+        public async Task<IActionResult> DeleteUserProfileById(int id, string aspuid)
         {
             if (!ModelState.IsValid)
             {
@@ -333,6 +336,36 @@ namespace SAWSCore3API.Controllers
             {
                 DBLogic logic = new DBLogic(_context);
                 logic.DeleteUserProfileById(id);
+
+                 //update identity isActive
+                try {               
+
+                    if (!String.IsNullOrEmpty(aspuid))
+                    {
+                        var user = await userManager.FindByIdAsync(aspuid);
+                        if (user != null)
+                        {
+                            user.IsActive = false;
+
+                            var result = await userManager.UpdateAsync(user);
+
+                            if (result.Succeeded)
+                            {
+                                //return RedirectToAction("Account");
+                            }
+                            else
+                            {
+                               
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception err)
+                { 
+
+                }
+
                 return Ok();
             }
             catch (Exception err)
