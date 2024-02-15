@@ -499,10 +499,10 @@ namespace SAWSCore3API.Controllers
             return Unauthorized(new { response = "Invalid email" });
         }
 
-        [HttpGet("LoginUserNameExist")]
-        public async Task<IActionResult> LoginUserNameExist(string username)
+        [HttpGet("LoginEmailExist")]
+        public async Task<IActionResult> LoginEmailExist(string email)
         {
-            var user = await userManager.FindByNameAsync(username);
+            var user = await userManager.FindByEmailAsync(email);
 
             if (user != null)
             {
