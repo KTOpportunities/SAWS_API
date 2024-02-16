@@ -205,7 +205,7 @@ namespace SAWSCore3API.Controllers
                     {
                         UserName = appUser.Username,
                         Email = appUser.Email,
-
+                        IsActive = true,
                     };
 
                     var result = await userManager.CreateAsync(user, appUser.Password);
