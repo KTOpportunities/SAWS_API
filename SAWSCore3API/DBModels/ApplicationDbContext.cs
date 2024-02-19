@@ -33,6 +33,8 @@ namespace SAWSCore3API.DBModels
 
         public DbSet<ApplicationUser> User { get; set; }
         public DbSet<UserProfile> userProfiles { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<FeedbackMessage> FeedbackMessages { get; set; }
 
     }
 }
