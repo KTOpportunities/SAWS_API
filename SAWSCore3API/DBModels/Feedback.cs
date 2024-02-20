@@ -12,12 +12,15 @@ namespace SAWSCore3API.DBModels
     public class Feedback
     {
         [Key]
-        public int Id { get; set; }
+        public int feebackId { get; set; }
         [Required]
         public string fullname { get; set; }
         [Required]
-        public string subscriberEmail { get; set; }
-        public string subscriberId { get; set; }
+        public string senderId { get; set; }
+        [Required]
+        public string senderEmail { get; set; }
+        public string responderId { get; set; }
+        public string responderEmail { get; set; }
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }
         public bool? isdeleted { get; set; }

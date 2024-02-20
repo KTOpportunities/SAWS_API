@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -17,11 +19,10 @@ namespace SAWSCore3API.Logic
     {
         public ApplicationDbContext _context;
 
-        public DBLogic(ApplicationDbContext applicationDbContext)
+        public DBLogic( ApplicationDbContext applicationDbContext)
         {
             _context = applicationDbContext;
         }
-
 
         public void InsertUpdateUserProfile(UserProfile user)
         {
@@ -118,13 +119,16 @@ namespace SAWSCore3API.Logic
         {
             var message = "";
 
-            if (feedback.Id == 0)
+            ProcessFeedbackMessage(feedback);
+            
+            if (feedback.feebackId == 0)
             {
                 try
                 {
                     feedback.created_at = DateTime.Now;
                     feedback.updated_at = DateTime.Now;
                     feedback.isdeleted = false;
+
                     _context.Feedbacks.Add(feedback);
                     _context.SaveChanges();
                     message = "Success";
@@ -138,6 +142,7 @@ namespace SAWSCore3API.Logic
             {
                 feedback.updated_at = DateTime.Now;
                 feedback.isdeleted = false;
+
                 _context.Feedbacks.Update(feedback);
                 _context.SaveChanges();
                 message = "Success";
@@ -146,16 +151,35 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
+        public void ProcessFeedbackMessage(Feedback feedback) 
+        {
+            foreach (var feedbackMessage in feedback.FeedbackMessages)
+            {
+                feedbackMessage.responderId = feedback.responderId;
+                feedbackMessage.responderEmail = feedback.responderEmail;
+                feedbackMessage.created_at = DateTime.Now;
+                feedbackMessage.updated_at = DateTime.Now;
+                feedbackMessage.isdeleted = false;
+           }
+        }
+
+
         public string DeleteFeedback(int id)
         {
             var message = "";
 
             try
             {
-                var feedback = _context.Feedbacks.First(a => a.Id == id);
+                var feedback = _context.Feedbacks.First(a => a.feebackId == id);
 
                 feedback.isdeleted = true;
                 feedback.deleted_at = DateTime.Now;
+
+                // foreach (var feedbackMessage in feedback.FeedbackMessages)
+                // {
+                //     feedbackMessage.deleted_at = DateTime.Now;
+                //     feedbackMessage.isdeleted = true;
+                // }
 
                 _context.SaveChanges();
                 message = "Success";
@@ -168,35 +192,35 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        public FeedbackMessage InsertUpdateFeedbackMessage(FeedbackMessage feedback)
+        public FeedbackMessage InsertUpdateFeedbackMessage(FeedbackMessage feedbackMessage)
         {
 
-            bool insertMode = feedback.Id == 0;
+            bool insertMode = feedbackMessage.feedbackMessageId == 0;
 
             try
             {
-                if (feedback != null)
+                if (feedbackMessage != null)
                 {
                     if (insertMode)
                     {
-                        feedback.created_at = DateTime.Now;
-                        feedback.updated_at = DateTime.Now;
-                        feedback.isdeleted = false;
-                        feedback.deleted_at = null;
+                        feedbackMessage.created_at = DateTime.Now;
+                        feedbackMessage.updated_at = DateTime.Now;
+                        feedbackMessage.isdeleted = false;
+                        feedbackMessage.deleted_at = null;
                        
-                        _context.FeedbackMessages.Add(feedback);
+                        _context.FeedbackMessages.Add(feedbackMessage);
                     }
                     else
                     {
                         var local = _context.Set<FeedbackMessage>()
                     .Local
-                    .FirstOrDefault(f => f.Id == feedback.Id);
+                    .FirstOrDefault(f => f.feedbackMessageId == feedbackMessage.feedbackMessageId);
 
                         if (local != null)
                         {
                             _context.Entry(local).State = EntityState.Detached;
                         }
-                        _context.Entry(feedback).State = EntityState.Modified;
+                        _context.Entry(feedbackMessage).State = EntityState.Modified;
                     }
 
                     _context.SaveChanges();
@@ -211,33 +235,18 @@ namespace SAWSCore3API.Logic
                 throw;
             }
 
-            return (feedback);
+            return (feedbackMessage);
         }
 
-        public FeedbackMessage GetFeedbackMessageById(int Id)
+        public Feedback GetFeedbackById(int Id)
         {
-            FeedbackMessage feedback = new FeedbackMessage();
+            Feedback feedback = new Feedback();
 
             try
             {
-                feedback = _context.FeedbackMessages.Where(d => d.Id == Id).FirstOrDefault();
-            }
-            catch (Exception err)
-            {
-
-            }
-
-
-            return (feedback);
-        }
-
-        public FeedbackMessage GetFeedbackMessagesBySubcriberId(string Id)
-        {
-            FeedbackMessage feedback = new FeedbackMessage();
-
-            try
-            {
-                feedback = _context.FeedbackMessages.Where(d => d.SubcriberId == Id).FirstOrDefault();
+                feedback = _context.Feedbacks.Where(d => d.feebackId == Id)
+                .Include(f => f.FeedbackMessages)
+                .FirstOrDefault();
             }
             catch (Exception err)
             {
@@ -246,6 +255,26 @@ namespace SAWSCore3API.Logic
 
             return (feedback);
         }
+
+        public IEnumerable<FeedbackMessage> GetFeedbackMessagesBySenderId(string id)
+        {
+            IEnumerable<FeedbackMessage> feedbackMessages;
+
+            try
+            {
+                feedbackMessages = _context.FeedbackMessages
+                                        .Where(fm => fm.senderId == id)
+                                        .OrderByDescending(d => d.feedbackMessageId)
+                                        .ToList();
+            }
+            catch (Exception err)
+            {
+                feedbackMessages = Enumerable.Empty<FeedbackMessage>();
+            }
+
+            return feedbackMessages;
+        }
+
 
     }
 }
