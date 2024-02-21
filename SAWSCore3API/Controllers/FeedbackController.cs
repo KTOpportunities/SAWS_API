@@ -84,7 +84,6 @@ namespace SAWSCore3API.Controllers
 
                 var pagedData = _context.Feedbacks
                     .Where(d => d.isdeleted == false)
-                    .Include(f => f.FeedbackMessages)
                     .OrderByDescending(d => d.feebackId)
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)
