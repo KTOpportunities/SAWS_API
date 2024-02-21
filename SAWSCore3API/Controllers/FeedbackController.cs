@@ -163,49 +163,6 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
-        // [HttpPost]
-        // [Route("PostInsertUpdateFeedbackMessage")]
-        // public ActionResult PostInsertUpdateFeedbackMessage([FromBody] List<FeedbackMessage> feedbackMessages)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
-        //     }
-
-        //     DBLogic logic = new DBLogic(_context);
-
-        //     var toReturn = new List<FeedbackMessage>();
-        //     var dbItem = new FeedbackMessage();
-
-        //     foreach (var feedbackMessage in feedbackMessages)
-        //     {
-
-        //         try
-        //         {
-
-        //             dbItem.feedbackMessageId = feedbackMessage.feedbackMessageId;
-        //             dbItem.senderId = feedbackMessage.senderId;
-        //             dbItem.responderId = feedbackMessage.responderId;
-        //             dbItem.message = feedbackMessage.message;
-        //             // dbItem.created_at = ;
-        //             // dbItem.updated_at = ;
-        //             // dbItem.isdeleted = ;
-        //             // dbItem.deleted_at = ;
-
-        //             logic.InsertUpdateFeedbackMessage(dbItem);
-        //         }
-        //         catch (Exception err)
-        //         {
-        //                 string message = err.Message;
-        //                 return BadRequest(new Response { Status = "Error", Message = "Error=" + err.Message + " InnerException=" + err.InnerException.Message });
-        //         }
-            
-        //     }
-            
-        //     return Ok(toReturn);
-        // }
-
-
         [HttpGet]
         [Route("GetFeedbackById")]
         public IActionResult GetFeedbackById(int id)
