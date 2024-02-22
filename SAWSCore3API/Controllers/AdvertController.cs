@@ -168,14 +168,13 @@ namespace SAWSCore3API.Controllers
                 {
                     response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to return advert" });
                 }
-
             }
 
             return Ok(response);
         }
 
-        [HttpDelete("DeleteFeedbackById")]
-        public ActionResult<string> DeleteFeedbackById(int id)
+        [HttpDelete("DeleteAdvertById")]
+        public ActionResult<string> DeleteAdvertById(int id)
         {
 
             ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -183,14 +182,14 @@ namespace SAWSCore3API.Controllers
             if (ModelState.IsValid)
             {
                 DBLogic logic = new DBLogic(_context);
-                var DBResponse = logic.DeleteFeedback(id);
+                var DBResponse = logic.DeleteAdvert(id);
                 if (DBResponse == "Success")
                 { 
-                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted Feedback" });
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted advert" });
                 }
                 else
                 {
-                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to delete feeback" });
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to delete advert" });
                 }
             }
             else
@@ -198,22 +197,6 @@ namespace SAWSCore3API.Controllers
                 response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Model State Is Invalid" });
             }
             return response;
-        }
-
-        [HttpGet]
-        [Route("GetFeedbackMessagesBySenderId")]
-        public IActionResult GetFeedbackMessagesBySenderId(string id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
-            }
-
-            DBLogic logic = new DBLogic(_context);
-
-            var feedbacks = logic.GetFeedbackMessagesBySenderId(id);
-
-            return Ok(feedbacks);
         }
 
     }

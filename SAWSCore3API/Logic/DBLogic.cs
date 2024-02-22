@@ -174,14 +174,7 @@ namespace SAWSCore3API.Logic
 
                 feedback.isdeleted = true;
                 feedback.deleted_at = DateTime.Now;
-
-                // foreach (var feedbackMessage in feedback.FeedbackMessages)
-                // {
-                //     feedbackMessage.deleted_at = DateTime.Now;
-                //     feedbackMessage.isdeleted = true;
-                // }
-
-                _context.SaveChanges();
+               _context.SaveChanges();
                 message = "Success";
             }
             catch (Exception e)
@@ -331,9 +324,13 @@ namespace SAWSCore3API.Logic
                     }
                     else
                     {
+
+                        item.isdeleted = false;                        
+                        
                         var local = _context.Set<DocAdvert>()
-                    .Local
-                    .FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
+                        .Local
+                        .FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
+
                         if (local != null)
                         {
                             _context.Entry(local).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
@@ -352,6 +349,66 @@ namespace SAWSCore3API.Logic
             }
 
             return (item);
+        }
+
+        public DocAdvert GetDocAdvertFileById(int Id)
+        {
+            DocAdvert item = new DocAdvert();
+
+            try 
+            {
+                item = _context.DocAdverts.Where(d => d.Id == Id).FirstOrDefault();
+            } 
+            catch (Exception err) 
+            { 
+
+            }            
+
+            return (item);
+        }
+
+        public string DeleteDocAdvert(int id)
+        {
+            var message = "";
+
+            try
+            {
+                var doc = _context.DocAdverts.First(a => a.Id == id);
+
+                doc.isdeleted = true;
+                doc.deleted_at = DateTime.Now;
+
+                _context.SaveChanges();
+                message = "Success";
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return message;
+
+        }
+
+        public string DeleteAdvert(int id)
+        {
+            var message = "";
+
+            try
+            {
+                var advert = _context.Adverts.First(a => a.advertId == id);
+
+                advert.isdeleted = true;
+                advert.deleted_at = DateTime.Now;
+
+               _context.SaveChanges();
+                message = "Success";
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return message;
         }
 
 

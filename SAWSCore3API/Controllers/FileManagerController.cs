@@ -120,9 +120,73 @@ namespace SAWSCore3API.Controllers
                 }
             }
 
-            //Send OK Response to Client.
             return Ok(toReturn);
         }
+
+        [HttpGet]
+        [Route("GetDocAdvertFileById")]
+        public IActionResult GetDocAdvertFileById(int id)
+        {
+
+            ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+            DBLogic logic = new DBLogic(_context);
+
+            var item = logic.GetDocAdvertFileById(id);
+
+            if (item == null)
+            {
+                response = StatusCode(StatusCodes.Status404NotFound, new Response { Status = "Not Found", Message = $"Advert file with id: {id} to add new feedback" });
+
+                return response;
+            }
+
+            var net = new System.Net.WebClient();
+            byte[] fileBytes = System.IO.File.ReadAllBytes(item.file_url);
+            var contentType = item.file_mimetype;
+            var fileName = item.file_origname;
+
+            return File(fileBytes, contentType, fileName);
+
+        }
+
+        [HttpDelete]
+        [Route("DeleteDocAdvertById")]
+        public ActionResult<string> DeleteDocAdvertById(int Id)
+        {
+
+            ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+
+            if (ModelState.IsValid)
+            {
+                DBLogic logic = new DBLogic(_context);
+                var DBResponse = logic.DeleteDocAdvert(Id);
+
+                if (DBResponse == "Success")
+                { 
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = $"Successfully deleted advert document with Id {Id}" }); 
+                    }
+                else
+                {
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = $"Failed to delete advert document with Id {Id}" });
+                }
+            }
+
+            else
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+            return response;
+        }
+
+
+
 
 
         
