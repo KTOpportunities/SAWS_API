@@ -275,6 +275,85 @@ namespace SAWSCore3API.Logic
             return feedbackMessages;
         }
 
+        public string PostInsertNewAdvert(Advert advert)
+        {
+            var message = "";
+
+            // ProcessFeedbackMessage(feedback);
+            
+            if (advert.advertId == 0)
+            {
+                try
+                {
+                    advert.created_at = DateTime.Now;
+                    advert.updated_at = DateTime.Now;
+                    advert.isdeleted = false;
+
+                    _context.Adverts.Add(advert);
+                    _context.SaveChanges();
+                    message = "Success";
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
+            {
+                advert.updated_at = DateTime.Now;
+                advert.isdeleted = false;
+
+                _context.Adverts.Update(advert);
+                _context.SaveChanges();
+                message = "Success";
+            }
+
+            return message;
+        }
+
+        public DocAdvert InsertUpdateDocAdvert(DocAdvert item)
+        {
+            bool insertMode = item.Id == 0;
+
+            try
+            {
+                if (item != null)
+                {
+                    var clpExist = _context.DocAdverts.FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
+
+                    if (clpExist != null)
+                        insertMode = item.Id == 0;
+
+                    if (insertMode)
+                    {   
+
+                        _context.DocAdverts.Add(item);
+                    }
+                    else
+                    {
+                        var local = _context.Set<DocAdvert>()
+                    .Local
+                    .FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
+                        if (local != null)
+                        {
+                            _context.Entry(local).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+                        }
+                        _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    }
+
+                    _context.SaveChanges();
+
+                }
+            }
+            catch (Exception err)
+            {
+                string errMessage = err.Message;
+                throw;
+            }
+
+            return (item);
+        }
+
 
     }
 }
