@@ -14,7 +14,9 @@ namespace SAWSCore3API.DBModels
         [Key]
         public int serviceId { get; set; }
         [Required]
-        public string name { get; set; }    
+        public string name { get; set; }
+        [Required]
+        public int packageId { get; set; }
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }
         public bool? isdeleted { get; set; }
