@@ -58,8 +58,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetPagedAllSubscribers")]
-        [AllowAnonymous]
-        
+        [AllowAnonymous]        
         public IActionResult GetPagedAllUsers([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -76,6 +75,7 @@ namespace SAWSCore3API.Controllers
 
                 var pagedData = _context.userProfiles
                     .Where(d => d.isdeleted == false && d.userrole=="Subscriber")
+                    .Include(d => d.Subscription)
                     .OrderByDescending(d => d.userprofileid)
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)

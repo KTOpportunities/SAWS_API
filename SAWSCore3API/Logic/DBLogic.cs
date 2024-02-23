@@ -271,9 +271,7 @@ namespace SAWSCore3API.Logic
         public string PostInsertNewAdvert(Advert advert)
         {
             var message = "";
-
-            // ProcessFeedbackMessage(feedback);
-            
+               
             if (advert.advertId == 0)
             {
                 try
@@ -410,6 +408,80 @@ namespace SAWSCore3API.Logic
             }
             return message;
         }
+
+        public string PostInsertSubcription(Subscription subscription)
+        {
+            var message = "";
+ 
+            if (subscription.subscriptionId == 0)
+            {
+                try
+                {
+                    subscription.created_at = DateTime.Now;
+                    subscription.updated_at = DateTime.Now;
+                    subscription.isdeleted = false;
+
+                    _context.Subscriptions.Add(subscription);
+                    _context.SaveChanges();
+                    message = "Success";
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
+            {
+                subscription.updated_at = DateTime.Now;
+                subscription.isdeleted = false;
+
+                _context.Subscriptions.Update(subscription);
+                _context.SaveChanges();
+                message = "Success";
+            }
+
+            return message;
+        }
+
+        public string DeleteSubcription(int id)
+        {
+            var message = "";
+
+            try
+            {
+                var subscription = _context.Subscriptions.First(a => a.subscriptionId == id);
+
+                subscription.isdeleted = true;
+                subscription.deleted_at = DateTime.Now;
+               _context.SaveChanges();
+                message = "Success";
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return message;
+        }
+
+        public Subscription GetSubcriptionById(int Id)
+        {
+            Subscription subscription = new Subscription();
+
+            try
+            {
+                subscription = _context.Subscriptions.Where(d => d.subscriptionId == Id)
+                .FirstOrDefault();
+            }
+            catch (Exception err)
+            {
+
+            }
+
+            return (subscription);
+        }
+
+        
 
 
     }

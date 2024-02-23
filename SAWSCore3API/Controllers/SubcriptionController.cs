@@ -29,7 +29,7 @@ namespace SAWSCore3API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FeedbackController : ControllerBase
+    public class SubcriptionController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
         private IWebHostEnvironment Environment;
@@ -41,7 +41,7 @@ namespace SAWSCore3API.Controllers
         private readonly IUriService uriService;
 
 
-        public FeedbackController(
+        public SubcriptionController(
             IWebHostEnvironment _environment,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -62,49 +62,10 @@ namespace SAWSCore3API.Controllers
             this.uriService = uriService;
 
         }
-
-
-         [HttpGet]
-        [Route("GetPagedAllFeedbacks")]
-        [AllowAnonymous]
         
-        public IActionResult GetPagedAllFeedbacks([FromQuery] PaginationFilter filter)
-        {
-            DBLogic logic = new DBLogic(_context);
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
-            try
-            {
-                var route = Request.Path.Value;
-                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-
-                var pagedData = _context.Feedbacks
-                    .Where(d => d.isdeleted == false)
-                    .Include(d => d.FeedbackMessages)
-                    .OrderByDescending(d => d.feebackId)
-               .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
-               .Take(validFilter.PageSize)
-               .ToList();
-                var totalRecords = _context.Feedbacks.Where(d => d.isdeleted == false).Count();
-
-                var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
-                return Ok(pagedReponse);
-
-            }
-            catch (Exception err)
-            {
-                string message = err.Message;
-                return BadRequest(new Response { Status = "Error", Message = err.Message });
-            }
-        }
-
-        [HttpPost("PostInsertNewFeedback")]
+        [HttpPost("PostInsertSubcription")]
         [AllowAnonymous]
-        public ActionResult<string> PostInsertNewFeedback( Feedback feedback)
+        public ActionResult<string> PostInsertSubcription( Subscription subscription)
         {
 
             if (!ModelState.IsValid)
@@ -119,15 +80,15 @@ namespace SAWSCore3API.Controllers
   
                 DBLogic logic = new DBLogic(_context);
                     
-                var DBResponse = logic.PostInsertNewFeeback(feedback);
+                var DBResponse = logic.PostInsertSubcription(subscription);
 
                 if (DBResponse == "Success")
                 { 
-                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully added new feedback", DetailDescription = feedback }); 
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully added subscription", DetailDescription = subscription }); 
                 }
                 else
                 {
-                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to add new feeback" });
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to add subscription" });
                 }   
             }
             else
@@ -137,8 +98,8 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
-        [HttpDelete("DeleteFeedbackById")]
-        public ActionResult<string> DeleteFeedbackById(int id)
+        [HttpDelete("DeleteSubcriptionById")]
+        public ActionResult<string> DeleteSubcriptionById(int id)
         {
 
             ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -146,14 +107,14 @@ namespace SAWSCore3API.Controllers
             if (ModelState.IsValid)
             {
                 DBLogic logic = new DBLogic(_context);
-                var DBResponse = logic.DeleteFeedback(id);
+                var DBResponse = logic.DeleteSubcription(id);
                 if (DBResponse == "Success")
                 { 
-                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted Feedback" });
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted subcription" });
                 }
                 else
                 {
-                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to delete feeback" });
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to delete subcription" });
                 }
             }
             else
@@ -164,8 +125,8 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet]
-        [Route("GetFeedbackById")]
-        public IActionResult GetFeedbackById(int id)
+        [Route("GetSubscriptionById")]
+        public IActionResult GetSubscriptionById(int id)
         {
             if (!ModelState.IsValid)
             {
@@ -174,25 +135,9 @@ namespace SAWSCore3API.Controllers
 
             DBLogic logic = new DBLogic(_context);
 
-            var feedbacks = logic.GetFeedbackById(id);
+            var subscription = logic.GetSubcriptionById(id);
 
-            return Ok(feedbacks);
-        }
-
-        [HttpGet]
-        [Route("GetFeedbackMessagesBySenderId")]
-        public IActionResult GetFeedbackMessagesBySenderId(string id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
-            }
-
-            DBLogic logic = new DBLogic(_context);
-
-            var feedbacks = logic.GetFeedbackMessagesBySenderId(id);
-
-            return Ok(feedbacks);
+            return Ok(subscription);
         }
 
     }
