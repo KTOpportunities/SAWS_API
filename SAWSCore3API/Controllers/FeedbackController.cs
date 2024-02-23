@@ -64,7 +64,7 @@ namespace SAWSCore3API.Controllers
         }
 
 
-         [HttpGet]
+        [HttpGet]
         [Route("GetPagedAllFeedbacks")]
         [AllowAnonymous]
         

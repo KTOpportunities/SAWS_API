@@ -15,7 +15,7 @@ namespace SAWSCore3API.DBModels
         public int packageId { get; set; }
         [Required]
         public string name { get; set; }    
-        public string price { get; set; }
+        public Decimal price { get; set; }
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }
         public bool? isdeleted { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -19,9 +20,17 @@ namespace SAWSCore3API.Logic
     {
         public ApplicationDbContext _context;
 
+        public IConfiguration _configuration { get; }
+
         public DBLogic( ApplicationDbContext applicationDbContext)
         {
             _context = applicationDbContext;
+        }
+
+        public DBLogic( ApplicationDbContext applicationDbContext, IConfiguration configuration)
+        {
+            _context = applicationDbContext;
+            _configuration = configuration;
         }
 
         public void InsertUpdateUserProfile(UserProfile user)
@@ -481,7 +490,54 @@ namespace SAWSCore3API.Logic
             return (subscription);
         }
 
+        public List<Package> GetAllPackages()
+        {
+            IQueryable<Package> toReturn;
+
+            try
+            {
+                toReturn = _context.Packages.AsQueryable();
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn.ToList();
+        }
         
+        public List<Service> GetServicesByPackageId(int id)
+        {
+            List<Service> toReturn = new List<Service>();
+
+            try
+            {
+                toReturn = _context.Services
+                           .Where(d => d.packageId==id && d.isdeleted == false) 
+                           .ToList();
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn;
+        }
+
+        public List<ServiceProduct> GetServiceProductsByServiceId(int id)
+        {
+            List<ServiceProduct> toReturn = new List<ServiceProduct>();
+
+            try
+            {
+                toReturn = _context.ServiceProducts
+                           .Where(d => d.serviceId==id && d.isdeleted == false) 
+                           .ToList();
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn;
+        }
 
 
     }
