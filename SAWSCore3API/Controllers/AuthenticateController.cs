@@ -110,11 +110,16 @@ namespace SAWSCore3API.Controllers
                 //userObj = _context.users.Where(d => d.id == usermap.userid).SingleOrDefault();
                 if (signInResult.Succeeded)
                 {
+
+                    var userProfile = _context.userProfiles
+                        .FirstOrDefault(up => up.aspuid == user.Id);
+
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token)
                         ,expiration = token.ValidTo
                         ,aspUserID  = user.Id.ToString()
+                        ,fullname = userProfile != null ? userProfile.fullname : ""
                         ,aspUserName = user.UserName
                         ,aspUserEmail = user.Email
                         ,rolesList  = rolesList

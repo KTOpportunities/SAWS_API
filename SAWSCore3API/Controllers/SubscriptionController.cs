@@ -29,7 +29,7 @@ namespace SAWSCore3API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SubcriptionController : ControllerBase
+    public class SubscriptionController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
         private IWebHostEnvironment Environment;
@@ -41,7 +41,7 @@ namespace SAWSCore3API.Controllers
         private readonly IUriService uriService;
 
 
-        public SubcriptionController(
+        public SubscriptionController(
             IWebHostEnvironment _environment,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -63,9 +63,9 @@ namespace SAWSCore3API.Controllers
 
         }
         
-        [HttpPost("PostInsertSubcription")]
+        [HttpPost("PostInsertSubscription")]
         [AllowAnonymous]
-        public ActionResult<string> PostInsertSubcription( Subscription subscription)
+        public ActionResult<string> PostInsertSubscription( Subscription subscription)
         {
 
             if (!ModelState.IsValid)
@@ -98,8 +98,8 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
-        [HttpDelete("DeleteSubcriptionById")]
-        public ActionResult<string> DeleteSubcriptionById(int id)
+        [HttpDelete("DeleteSubscriptionById")]
+        public ActionResult<string> DeleteSubscriptionById(int id)
         {
 
             ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -107,7 +107,7 @@ namespace SAWSCore3API.Controllers
             if (ModelState.IsValid)
             {
                 DBLogic logic = new DBLogic(_context);
-                var DBResponse = logic.DeleteSubcription(id);
+                var DBResponse = logic.DeleteSubscription(id);
                 if (DBResponse == "Success")
                 { 
                     response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted subcription" });
@@ -135,7 +135,7 @@ namespace SAWSCore3API.Controllers
 
             DBLogic logic = new DBLogic(_context);
 
-            var subscription = logic.GetSubcriptionById(id);
+            var subscription = logic.GetSubscriptionById(id);
 
             return Ok(subscription);
         }

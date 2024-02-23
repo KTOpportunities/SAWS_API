@@ -443,7 +443,7 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        public string DeleteSubcription(int id)
+        public string DeleteSubscription(int id)
         {
             var message = "";
 
@@ -464,7 +464,7 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        public Subscription GetSubcriptionById(int Id)
+        public Subscription GetSubscriptionById(int Id)
         {
             Subscription subscription = new Subscription();
 
