@@ -18,6 +18,8 @@ namespace SAWSCore3API.DBModels
         [Required]
         public string senderId { get; set; }
         [Required]
+         public string title { get; set; }
+        [Required]
         public string senderEmail { get; set; }
         public string responderId { get; set; }
         public string responderEmail { get; set; }

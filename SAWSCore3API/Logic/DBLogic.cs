@@ -258,23 +258,23 @@ namespace SAWSCore3API.Logic
             return (feedback);
         }
 
-        public IEnumerable<FeedbackMessage> GetFeedbackMessagesBySenderId(string id)
+        public IEnumerable<Feedback> GetFeedbackMessagesBySenderId(string id)
         {
-            IEnumerable<FeedbackMessage> feedbackMessages;
+            IEnumerable<Feedback> feedbacks;
 
             try
             {
-                feedbackMessages = _context.FeedbackMessages
+                feedbacks = _context.Feedbacks
                                         .Where(fm => fm.senderId == id)
-                                        .OrderByDescending(d => d.feedbackMessageId)
+                                        .OrderByDescending(d => d.feebackId)
                                         .ToList();
             }
             catch (Exception err)
             {
-                feedbackMessages = Enumerable.Empty<FeedbackMessage>();
+                feedbacks = Enumerable.Empty<Feedback>();
             }
 
-            return feedbackMessages;
+            return feedbacks;
         }
 
         public string PostInsertNewAdvert(Advert advert)
