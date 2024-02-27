@@ -135,6 +135,30 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
+        [HttpGet("GetAllAdverts")]
+        public IActionResult GetAllAdverts()
+        {
+            DBLogic logic = new DBLogic(_context);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                List<Advert> records = new List<Advert>();
+                records = logic.GetAllAdverts().ToList();
+
+                return Ok(records);
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
+        }
+
         [HttpGet]
         [Route("GetAdvertByAdvertId")]
         public IActionResult GetAdvertByAdvertId(int id)

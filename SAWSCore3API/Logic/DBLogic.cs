@@ -539,6 +539,23 @@ namespace SAWSCore3API.Logic
             return toReturn;
         }
 
+        public List<Advert> GetAllAdverts()
+        {
+            IQueryable<Advert> toReturn;
+
+            try
+            {
+                toReturn = _context.Adverts
+                 .Where(d => d.isdeleted == false)
+                .AsQueryable();
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn.ToList();
+        }
+
 
     }
 }
