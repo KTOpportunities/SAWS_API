@@ -130,7 +130,7 @@ namespace SAWSCore3API.Logic
 
             ProcessFeedbackMessage(feedback);
             
-            if (feedback.feebackId == 0)
+            if (feedback.feedbackId == 0)
             {
                 try
                 {
@@ -179,7 +179,7 @@ namespace SAWSCore3API.Logic
 
             try
             {
-                var feedback = _context.Feedbacks.First(a => a.feebackId == id);
+                var feedback = _context.Feedbacks.First(a => a.feedbackId == id);
 
                 feedback.isdeleted = true;
                 feedback.deleted_at = DateTime.Now;
@@ -246,7 +246,7 @@ namespace SAWSCore3API.Logic
 
             try
             {
-                feedback = _context.Feedbacks.Where(d => d.feebackId == Id)
+                feedback = _context.Feedbacks.Where(d => d.feedbackId == Id)
                 .Include(f => f.FeedbackMessages)
                 .FirstOrDefault();
             }
@@ -266,7 +266,7 @@ namespace SAWSCore3API.Logic
             {
                 feedbacks = _context.Feedbacks
                                         .Where(fm => fm.senderId == id)
-                                        .OrderByDescending(d => d.feebackId)
+                                        .OrderByDescending(d => d.feedbackId)
                                         .ToList();
             }
             catch (Exception err)
@@ -546,7 +546,7 @@ namespace SAWSCore3API.Logic
             try
             {
                 toReturn = _context.Adverts
-                 .Where(d => d.isdeleted == false)
+                 .Where(d => d.isdeleted == false && d.ispublished == true)
                 .AsQueryable();
             }
             catch (Exception err)

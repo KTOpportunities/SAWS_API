@@ -12,7 +12,7 @@ namespace SAWSCore3API.DBModels
     public class Feedback
     {
         [Key]
-        public int feebackId { get; set; }
+        public int feedbackId { get; set; }
         [Required]
         public string fullname { get; set; }
         [Required]

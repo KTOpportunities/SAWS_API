@@ -184,7 +184,7 @@ namespace SAWSCore3API.Controllers
                     .Include(d => d.DocAdverts)
                     .FirstOrDefault();
 
-                 if (advert != null)
+                if (advert != null)
                 { 
                     response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully returned advert", DetailDescription = advert }); 
                 }

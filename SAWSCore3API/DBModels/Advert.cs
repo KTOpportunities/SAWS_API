@@ -19,6 +19,7 @@ namespace SAWSCore3API.DBModels
         [DataType(DataType.EmailAddress)]
         public string uploaded_by { get; set; }
         public string advert_url { get; set; }
+        public bool? ispublished { get; set; }
         public DateTime? created_at { get; set; }
         public DateTime? updated_at { get; set; }
         public bool? isdeleted { get; set; }
