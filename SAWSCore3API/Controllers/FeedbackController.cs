@@ -137,6 +137,49 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
+        [HttpPost("PostInsertBroadcastMessages")]
+        [AllowAnonymous]
+        public ActionResult<string> PostInsertBroadcastMessages(List<Feedback> feedbackList)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+           ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+
+            DBLogic logic = new DBLogic(_context);
+
+            var broadcastId = Guid.NewGuid().ToString();
+
+            foreach (Feedback feedback in feedbackList)
+            {
+                if (ModelState.IsValid)
+                {
+
+                    // feedback.FeedbackMessages.broadcastId = broadcastId;
+                                
+                    var DBResponse = logic.PostInsertBroadcastMessages(feedback, broadcastId);
+
+                    if (DBResponse == "Success")
+                    {
+                        response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully added broadcast message", DetailDescription = feedback });
+                    }
+                    else
+                    {
+                        response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to add broadcast message" });
+                    }
+                }
+                else
+                {
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Model State Is Invalid" });
+                }
+            }
+
+            return response;
+        }
+
+
         [HttpDelete("DeleteFeedbackById")]
         public ActionResult<string> DeleteFeedbackById(int id)
         {
@@ -177,6 +220,29 @@ namespace SAWSCore3API.Controllers
             var feedbacks = logic.GetFeedbackById(id);
 
             return Ok(feedbacks);
+        }
+
+        [HttpGet]
+        [Route("GetBroadcastMessages")]
+        public IActionResult GetBroadcastMessages()
+        {
+            DBLogic logic = new DBLogic(_context);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+            try
+            {
+                var broadcasts = logic.GetBroadcastMessages();
+                return Ok(broadcasts);
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
         }
 
         [HttpGet]

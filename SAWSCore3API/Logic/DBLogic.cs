@@ -160,6 +160,42 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
+        public string PostInsertBroadcastMessages(Feedback feedback, string broadcastId)
+        {
+            var message = "";
+
+            ProcessBroadcastMessage(feedback, broadcastId);
+            
+            if (feedback.feedbackId == 0)
+            {
+                try
+                {
+                    feedback.created_at = DateTime.Now;
+                    feedback.updated_at = DateTime.Now;
+                    feedback.isdeleted = false;
+
+                    _context.Feedbacks.Add(feedback);
+                    _context.SaveChanges();
+                    message = "Success";
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
+            {
+                feedback.updated_at = DateTime.Now;
+                feedback.isdeleted = false;
+
+                _context.Feedbacks.Update(feedback);
+                _context.SaveChanges();
+                message = "Success";
+            }
+
+            return message;
+        }
+
         public void ProcessFeedbackMessage(Feedback feedback) 
         {
             foreach (var feedbackMessage in feedback.FeedbackMessages)
@@ -171,6 +207,21 @@ namespace SAWSCore3API.Logic
                 feedbackMessage.isdeleted = false;
            }
         }
+
+           public void ProcessBroadcastMessage(Feedback feedback, string broadcastId)
+        {
+            foreach (var feedbackMessage in feedback.FeedbackMessages)
+            {
+                feedbackMessage.responderId = feedback.responderId;
+                feedbackMessage.responderEmail = feedback.responderEmail;
+                feedbackMessage.created_at = DateTime.Now;
+                feedbackMessage.updated_at = DateTime.Now;
+                feedbackMessage.isdeleted = false;
+                feedbackMessage.broadcastId = broadcastId;
+           }
+        }
+
+        
 
 
         public string DeleteFeedback(int id)
@@ -256,6 +307,29 @@ namespace SAWSCore3API.Logic
             }
 
             return (feedback);
+        }
+
+        public List<FeedbackMessage> GetBroadcastMessages()
+        {
+            List<FeedbackMessage> toReturn;
+
+            try
+            {
+                var allMessages = _context.FeedbackMessages
+                    .Where(d => d.isdeleted == false && d.broadcast != null)
+                    .ToList();
+
+                toReturn = allMessages
+                    .GroupBy(d => d.broadcastId)
+                    .Select(group => group.First())
+                    .ToList();
+                
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn;
         }
 
         public IEnumerable<Feedback> GetFeedbackMessagesBySenderId(string id)
