@@ -334,31 +334,6 @@ namespace SAWSCore3API.Logic
             return toReturn;
         }
 
-        public List<Feedback> GetPagedAllFeedbacksByUniqueEmail(PaginationFilter validFilter)
-        {
-            List<Feedback> toReturn;
-
-            try
-            {
-                var allFeedbacks = _context.Feedbacks
-                    .Where(d => d.isdeleted == false)
-                    .ToList();
-
-                toReturn = allFeedbacks
-                    .GroupBy(d => d.senderEmail)
-                    .Select(group => group.First())
-                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
-               .Take(validFilter.PageSize)
-                    .ToList();
-                
-            }
-            catch (Exception err)
-            {
-                throw;
-            }
-            return toReturn;
-        }
-
         public IEnumerable<Feedback> GetFeedbackMessagesBySenderId(string id)
         {
             IEnumerable<Feedback> feedbacks;

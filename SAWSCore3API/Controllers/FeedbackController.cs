@@ -89,6 +89,7 @@ namespace SAWSCore3API.Controllers
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)
                .ToList();
+
                 var totalRecords = _context.Feedbacks.Where(d => d.isdeleted == false).Count();
 
                 var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
@@ -115,14 +116,32 @@ namespace SAWSCore3API.Controllers
                 return BadRequest();
             }
 
+            List<Feedback> toReturn;
+
             try
             {
+
+                var allFeedbacks = _context.Feedbacks
+                    .Where(d => d.isdeleted == false)
+                    .ToList();
+
+
                 var route = Request.Path.Value;
                 var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
 
-                var pagedData = logic.GetPagedAllFeedbacksByUniqueEmail(validFilter);
+                toReturn = allFeedbacks
+                    .GroupBy(d => d.senderEmail)
+                    .Select(group => group.First())
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToList();
 
-                var totalRecords = pagedData.Count();
+
+                var pagedData = toReturn;
+
+                var totalRecords = allFeedbacks
+                                    .GroupBy(d => d.senderEmail)
+                                    .Count();                
 
                 var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
                 return Ok(pagedReponse);
