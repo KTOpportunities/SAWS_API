@@ -104,8 +104,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetPagedAllFeedbacksByUniqueEmail")]
-        [AllowAnonymous]
-        
+        [AllowAnonymous]        
         public IActionResult GetPagedAllFeedbacksByUniqueEmail([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -142,6 +141,57 @@ namespace SAWSCore3API.Controllers
                 var totalRecords = allFeedbacks
                                     .GroupBy(d => d.senderEmail)
                                     .Count();                
+
+                var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
+                return Ok(pagedReponse);
+
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                return BadRequest(new Response { Status = "Error", Message = err.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("GetPagedAllBroadcasts")]
+        [AllowAnonymous]        
+        public IActionResult GetPagedAllBroadcasts([FromQuery] PaginationFilter filter)
+        {
+            DBLogic logic = new DBLogic(_context);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            List<Feedback> toReturn;
+
+            try
+            {
+
+                var allFeedbacks = _context.Feedbacks
+                    .Where(d => d.isdeleted == false && d.broadcasterId != null)
+                    .OrderByDescending(d => d.feedbackId)
+                    .ToList();
+
+
+                var route = Request.Path.Value;
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+
+                toReturn = allFeedbacks
+                    .GroupBy(d => d.batchId)
+                    .Select(group => group.First())
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToList();
+
+
+                var pagedData = toReturn;
+
+                var totalRecords = allFeedbacks
+                                    .GroupBy(d => d.batchId)
+                                    .Count();               
 
                 var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
                 return Ok(pagedReponse);
