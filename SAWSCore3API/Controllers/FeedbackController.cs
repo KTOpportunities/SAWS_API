@@ -123,6 +123,7 @@ namespace SAWSCore3API.Controllers
 
                 var allFeedbacks = _context.Feedbacks
                     .Where(d => d.isdeleted == false)
+                    .OrderByDescending(d => d.feedbackId)
                     .ToList();
 
 
