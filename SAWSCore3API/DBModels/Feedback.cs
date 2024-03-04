@@ -23,6 +23,9 @@ namespace SAWSCore3API.DBModels
         public string senderEmail { get; set; }
         public string responderId { get; set; }
         public string responderEmail { get; set; }
+        public string broadcasterId { get; set; }
+        public string broadcasterEmail { get; set; }
+        public string batchId { get; set; }
         public bool? isresponded { get; set; }
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }

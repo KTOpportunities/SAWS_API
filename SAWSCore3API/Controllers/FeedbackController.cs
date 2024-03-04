@@ -203,16 +203,16 @@ namespace SAWSCore3API.Controllers
 
             DBLogic logic = new DBLogic(_context);
 
+            var batchId = Guid.NewGuid().ToString();
+
             var broadcastId = Guid.NewGuid().ToString();
 
             foreach (Feedback feedback in feedbackList)
             {
                 if (ModelState.IsValid)
                 {
-
-                    // feedback.FeedbackMessages.broadcastId = broadcastId;
-                                
-                    var DBResponse = logic.PostInsertBroadcastMessages(feedback, broadcastId);
+                          
+                    var DBResponse = logic.PostInsertBroadcastMessages(feedback, batchId, broadcastId);
 
                     if (DBResponse == "Success")
                     {

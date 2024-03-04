@@ -161,7 +161,7 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        public string PostInsertBroadcastMessages(Feedback feedback, string broadcastId)
+        public string PostInsertBroadcastMessages(Feedback feedback, string batchId, string broadcastId)
         {
             var message = "";
 
@@ -174,6 +174,7 @@ namespace SAWSCore3API.Logic
                     feedback.created_at = DateTime.Now;
                     feedback.updated_at = DateTime.Now;
                     feedback.isdeleted = false;
+                    feedback.batchId = batchId;
 
                     _context.Feedbacks.Add(feedback);
                     _context.SaveChanges();
