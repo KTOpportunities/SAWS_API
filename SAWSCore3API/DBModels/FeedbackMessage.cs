@@ -29,5 +29,6 @@ namespace SAWSCore3API.DBModels
         public DateTime? updated_at { get; set; }
         public bool? isdeleted { get; set; }
         public DateTime? deleted_at { get; set; }
+        public virtual List<DocFeedback> DocFeedbacks { get; set; } = new List<DocFeedback>();
     }
 }

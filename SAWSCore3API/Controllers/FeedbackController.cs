@@ -102,6 +102,39 @@ namespace SAWSCore3API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetPagedAllFeedbacksByUniqueEmail")]
+        [AllowAnonymous]
+        
+        public IActionResult GetPagedAllFeedbacksByUniqueEmail([FromQuery] PaginationFilter filter)
+        {
+            DBLogic logic = new DBLogic(_context);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var route = Request.Path.Value;
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+
+                var pagedData = logic.GetPagedAllFeedbacksByUniqueEmail(validFilter);
+
+                var totalRecords = pagedData.Count();
+
+                var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
+                return Ok(pagedReponse);
+
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                return BadRequest(new Response { Status = "Error", Message = err.Message });
+            }
+        }
+
         [HttpPost("PostInsertNewFeedback")]
         [AllowAnonymous]
         public ActionResult<string> PostInsertNewFeedback( Feedback feedback)

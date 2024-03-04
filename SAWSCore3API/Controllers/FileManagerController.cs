@@ -185,6 +185,85 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
+        [HttpPost]
+        [Route("PostDocsForFeedback")]
+        public IActionResult PostDocsForFeedback([FromForm] IList<DocFeedback> files)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+            var toReturn = new List<DocFeedback>();
+            DBLogic logic = new DBLogic(_context);
+    
+            foreach (var file in files)
+            {
+                var dbItem = new DocFeedback();
+
+                try
+                {
+                    var folderId = Convert.ToString(file.feedbackMessageId);
+                    var rootPath = Path.Combine(Environment.ContentRootPath, "Uploads"); ;
+                    //Create the Directory.
+                    string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Feedback\\");
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    //Fetch the File.
+                    IFormFile postedFile = file.file;                    
+
+                    //extract file detains
+                    string fileName = postedFile.FileName;
+                    string fileUrl = Path.Combine(path, fileName);
+                    string fileExtension = Path.GetExtension(postedFile.FileName);
+                    long filesize = postedFile.Length;
+                    string mimeType = postedFile.ContentType;
+
+                    //Save the File.
+                    using (FileStream stream = new FileStream(Path.Combine(path, fileName), FileMode.Create))
+                    {
+                        postedFile.CopyTo(stream);
+                    }
+
+                    //populate dbFileObject less the raw file
+                    dbItem.Id = file.Id;
+                    dbItem.feedbackMessageId = file.feedbackMessageId;
+                    dbItem.DocTypeName = file.DocTypeName;
+                    dbItem.file_origname = fileName;
+                    dbItem.file_url = fileUrl;
+                    dbItem.file_size = filesize;
+                    dbItem.file_mimetype = mimeType;
+                    dbItem.file_extention = fileExtension;
+                    if (file.Id == 0)
+                    {
+                        dbItem.created_at = DateTime.Now;
+                        dbItem.updated_at = DateTime.Now;
+                        dbItem.isdeleted = false;
+                    }
+                    else
+                    {
+                        dbItem.updated_at = DateTime.Now;
+                        dbItem.isdeleted = file.isdeleted;
+                    }
+
+
+                    logic.InsertUpdateDocFeedback(dbItem);
+
+
+                    toReturn.Add(dbItem);
+                }
+                catch (Exception err)
+                {
+                    string err0rMsg = err.Message;
+                }
+            }
+
+            return Ok(toReturn);
+        }
 
 
 

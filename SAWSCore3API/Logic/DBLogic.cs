@@ -13,6 +13,7 @@ using System.Web;
 
 using SAWSCore3API.Authentication;
 using SAWSCore3API.DBModels;
+using SAWSCore3API.Filters;
 
 namespace SAWSCore3API.Logic
 {
@@ -299,6 +300,7 @@ namespace SAWSCore3API.Logic
             {
                 feedback = _context.Feedbacks.Where(d => d.feedbackId == Id)
                 .Include(f => f.FeedbackMessages)
+                .ThenInclude(fm => fm.DocFeedbacks)
                 .FirstOrDefault();
             }
             catch (Exception err)
@@ -322,6 +324,31 @@ namespace SAWSCore3API.Logic
                 toReturn = allMessages
                     .GroupBy(d => d.broadcastId)
                     .Select(group => group.First())
+                    .ToList();
+                
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn;
+        }
+
+        public List<Feedback> GetPagedAllFeedbacksByUniqueEmail(PaginationFilter validFilter)
+        {
+            List<Feedback> toReturn;
+
+            try
+            {
+                var allFeedbacks = _context.Feedbacks
+                    .Where(d => d.isdeleted == false)
+                    .ToList();
+
+                toReturn = allFeedbacks
+                    .GroupBy(d => d.senderEmail)
+                    .Select(group => group.First())
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+               .Take(validFilter.PageSize)
                     .ToList();
                 
             }
@@ -411,6 +438,53 @@ namespace SAWSCore3API.Logic
                         var local = _context.Set<DocAdvert>()
                         .Local
                         .FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
+
+                        if (local != null)
+                        {
+                            _context.Entry(local).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+                        }
+                        _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    }
+
+                    _context.SaveChanges();
+
+                }
+            }
+            catch (Exception err)
+            {
+                string errMessage = err.Message;
+                throw;
+            }
+
+            return (item);
+        }
+
+        public DocFeedback InsertUpdateDocFeedback(DocFeedback item)
+        {
+            bool insertMode = item.Id == 0;
+
+            try
+            {
+                if (item != null)
+                {
+                    var clpExist = _context.DocAdverts.FirstOrDefault(f => (f.advertId == item.feedbackMessageId) && (f.DocTypeName == item.DocTypeName));
+
+                    if (clpExist != null)
+                        insertMode = item.Id == 0;
+
+                    if (insertMode)
+                    {   
+
+                        _context.DocFeedbacks.Add(item);
+                    }
+                    else
+                    {
+
+                        item.isdeleted = false;                        
+                        
+                        var local = _context.Set<DocFeedback>()
+                        .Local
+                        .FirstOrDefault(f => (f.feedbackMessageId == item.feedbackMessageId) && (f.DocTypeName == item.DocTypeName));
 
                         if (local != null)
                         {

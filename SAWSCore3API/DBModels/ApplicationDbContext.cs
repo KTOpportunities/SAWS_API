@@ -38,6 +38,7 @@ namespace SAWSCore3API.DBModels
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Advert> Adverts { get; set; }
         public DbSet<DocAdvert> DocAdverts { get; set; }
+        public DbSet<DocFeedback> DocFeedbacks { get; set; }
         public DbSet<Package> Packages { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<ServiceProduct> ServiceProducts { get; set; }
