@@ -83,14 +83,13 @@ namespace SAWSCore3API.Controllers
                 var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
 
                 var pagedData = _context.Feedbacks
-                    .Where(d => d.isdeleted == false)
-                    .Include(d => d.FeedbackMessages)
+                    .Where(d => d.isdeleted == false && d.broadcasterId == null)
                     .OrderByDescending(d => d.feedbackId)
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)
                .ToList();
 
-                var totalRecords = _context.Feedbacks.Where(d => d.isdeleted == false).Count();
+                var totalRecords = _context.Feedbacks.Where(d => d.isdeleted == false && d.broadcasterId == null).Count();
 
                 var pagedReponse = PaginationHelper.CreatePagedReponse<Feedback>(pagedData, validFilter, totalRecords, uriService, route);
                 return Ok(pagedReponse);
