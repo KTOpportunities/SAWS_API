@@ -245,13 +245,13 @@ namespace SAWSCore3API.Logic
         }
 
         
-        public string DeleteBroadcast(string title)
+        public string DeleteBroadcast(string batchId)
         {
             var message = "";
 
             try
             {
-                var feedbacksToDelete = _context.Feedbacks.Where(a => a.title == title).ToList();
+                var feedbacksToDelete = _context.Feedbacks.Where(a => a.batchId == batchId).ToList();
 
                 foreach (var feedback in feedbacksToDelete)
                 {

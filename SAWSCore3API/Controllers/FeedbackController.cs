@@ -308,8 +308,8 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
-        [HttpDelete("DeleteBroadcastByTitle")]
-        public ActionResult<string> DeleteBroadcastByTitle(string title)
+        [HttpDelete("DeleteBroadcastByBatchId")]
+        public ActionResult<string> DeleteBroadcastByBatchId(string batchId)
         {
 
             ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -317,7 +317,7 @@ namespace SAWSCore3API.Controllers
             if (ModelState.IsValid)
             {
                 DBLogic logic = new DBLogic(_context);
-                var DBResponse = logic.DeleteBroadcast(title);
+                var DBResponse = logic.DeleteBroadcast(batchId);
                 if (DBResponse == "Success")
                 { 
                     response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted Broadcast" });
