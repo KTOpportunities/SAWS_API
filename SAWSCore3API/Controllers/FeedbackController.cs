@@ -308,6 +308,32 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
+        [HttpDelete("DeleteBroadcastByTitle")]
+        public ActionResult<string> DeleteBroadcastByTitle(string title)
+        {
+
+            ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+
+            if (ModelState.IsValid)
+            {
+                DBLogic logic = new DBLogic(_context);
+                var DBResponse = logic.DeleteBroadcast(title);
+                if (DBResponse == "Success")
+                { 
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully deleted Broadcast" });
+                }
+                else
+                {
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to delete broadcast" });
+                }
+            }
+            else
+            {
+                response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Model State Is Invalid" });
+            }
+            return response;
+        }
+
         [HttpGet]
         [Route("GetFeedbackById")]
         public IActionResult GetFeedbackById(int id)

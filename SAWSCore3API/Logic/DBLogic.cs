@@ -223,9 +223,6 @@ namespace SAWSCore3API.Logic
            }
         }
 
-        
-
-
         public string DeleteFeedback(int id)
         {
             var message = "";
@@ -237,6 +234,32 @@ namespace SAWSCore3API.Logic
                 feedback.isdeleted = true;
                 feedback.deleted_at = DateTime.Now;
                _context.SaveChanges();
+                message = "Success";
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return message;
+        }
+
+        
+        public string DeleteBroadcast(string title)
+        {
+            var message = "";
+
+            try
+            {
+                var feedbacksToDelete = _context.Feedbacks.Where(a => a.title == title).ToList();
+
+                foreach (var feedback in feedbacksToDelete)
+                {
+                    feedback.isdeleted = true;
+                    feedback.deleted_at = DateTime.Now;
+                }
+
+                _context.SaveChanges();
                 message = "Success";
             }
             catch (Exception e)
