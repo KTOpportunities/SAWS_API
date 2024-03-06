@@ -150,7 +150,57 @@ namespace SAWSCore3API.Controllers
                 List<Advert> records = new List<Advert>();
                 records = logic.GetAllAdverts().ToList();
 
-                return Ok(records);
+                List<object> response = new List<object>();
+
+                // foreach (var advert in records)
+                // {
+                //     List<string> imageUrls = new List<string>();
+                //     foreach (var docAdvert in advert.DocAdverts)
+                //     {
+                //         // Construct a previewable image URL based on the file name
+                //         string imageUrl = Url.Content($"~/uploads/{advert.advertId}/Advert/{docAdvert.file_origname}");
+                //         imageUrls.Add(imageUrl);
+                //     }
+
+                //     var advertResponse = new
+                //     {
+                //         Advert = advert,
+                //         ImageUrls = imageUrls
+                //     };
+                //     response.Add(advertResponse);
+                // }
+
+                foreach (var advert in records)
+                {
+                    List<object> images = new List<object>();
+                    foreach (var docAdvert in advert.DocAdverts)
+                    {
+                        string imageUrl = Url.Content($"~/uploads/{advert.advertId}/Advert/{docAdvert.file_origname}");
+
+                        var net = new System.Net.WebClient();
+                        byte[] fileBytes = System.IO.File.ReadAllBytes(docAdvert.file_url);
+                        var contentType = docAdvert.file_mimetype;
+                        var fileName = docAdvert.file_origname;
+
+                        var imageData = new
+                        {
+                            Url = imageUrl,
+                            ContentType = contentType,
+                            FileName = fileName,
+                            Bytes = fileBytes
+                        };
+                        images.Add(imageData);
+                    }
+
+                    var advertResponse = new
+                    {
+                        Advert = advert,
+                        Images = images
+                    };
+                    response.Add(advertResponse);
+                }
+
+                return Ok(response);
             }
             catch (Exception err)
             {
@@ -170,12 +220,6 @@ namespace SAWSCore3API.Controllers
             {
                 return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
             }
-
-            // DBLogic logic = new DBLogic(_context);
-
-            // var feedbacks = logic.GetFeedbackById(id);
-
-            // return Ok(feedbacks);
 
              if (ModelState.IsValid)
             {
