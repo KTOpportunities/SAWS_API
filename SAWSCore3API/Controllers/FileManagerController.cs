@@ -111,6 +111,7 @@ namespace SAWSCore3API.Controllers
 
                     logic.InsertUpdateDocAdvert(dbItem);
 
+
                     toReturn.Add(dbItem);
                 }
                 catch (Exception err)
@@ -150,14 +151,7 @@ namespace SAWSCore3API.Controllers
             var contentType = item.file_mimetype;
             var fileName = item.file_origname;
 
-     
-            // return File(fileBytes, contentType, fileName);
-
-            return Ok(new {
-                fileBytes = fileBytes,
-                contentType = contentType,
-                fileName = fileName
-            });
+            return File(fileBytes, contentType, fileName);
 
         }
 
