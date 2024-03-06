@@ -694,7 +694,8 @@ namespace SAWSCore3API.Logic
             {
                 toReturn = _context.Adverts
                  .Where(d => d.isdeleted == false && d.ispublished == true)
-                .AsQueryable();
+                 .Include(d => d.DocAdverts)
+                 .AsQueryable();
             }
             catch (Exception err)
             {
