@@ -48,7 +48,7 @@ namespace SAWSCore3API.Controllers
         public IActionResult PostDocsForAdvert([FromForm] IList<DocAdvert> files)
         {
 
-            if (!ModelState.IsValid)
+           if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
             }
@@ -72,10 +72,11 @@ namespace SAWSCore3API.Controllers
                     }
 
                     //Fetch the File.
-                    IFormFile postedFile = file.file;                    
+                    IFormFile postedFile = file.file;
 
                     //extract file detains
-                    string fileName = postedFile.FileName;
+                    string fileName1 = postedFile.FileName;
+                    string fileName = fileName1;
                     string fileUrl = Path.Combine(path, fileName);
                     string fileExtension = Path.GetExtension(postedFile.FileName);
                     long filesize = postedFile.Length;

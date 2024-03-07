@@ -413,7 +413,9 @@ namespace SAWSCore3API.Logic
 
         public DocAdvert InsertUpdateDocAdvert(DocAdvert item)
         {
-            bool insertMode = item.Id == 0;
+             bool insertMode = item.Id == 0;
+
+            item.base64_file_url = FileToBase64(item.file_url);
 
             try
             {
@@ -462,11 +464,13 @@ namespace SAWSCore3API.Logic
         {
             bool insertMode = item.Id == 0;
 
+            item.base64_file_url = FileToBase64(item.file_url);
+
             try
             {
                 if (item != null)
                 {
-                    var clpExist = _context.DocAdverts.FirstOrDefault(f => (f.advertId == item.feedbackMessageId) && (f.DocTypeName == item.DocTypeName));
+                    var clpExist = _context.DocFeedbacks.FirstOrDefault(f => (f.feedbackMessageId == item.feedbackMessageId) && (f.DocTypeName == item.DocTypeName));
 
                     if (clpExist != null)
                         insertMode = item.Id == 0;
@@ -702,6 +706,14 @@ namespace SAWSCore3API.Logic
                 throw;
             }
             return toReturn.ToList();
+        }
+
+        public string FileToBase64(string filePath)
+        {
+            byte[] bytes = File.ReadAllBytes(filePath);
+            string base64String = Convert.ToBase64String(bytes);
+            
+            return base64String;
         }
 
 
