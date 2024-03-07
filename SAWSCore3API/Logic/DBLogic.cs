@@ -14,8 +14,6 @@ using System.Web;
 using SAWSCore3API.Authentication;
 using SAWSCore3API.DBModels;
 using SAWSCore3API.Filters;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace SAWSCore3API.Logic
 {
@@ -706,31 +704,6 @@ namespace SAWSCore3API.Logic
             return toReturn.ToList();
         }
 
-        public async Task<string> FileToBase64(string filePath)
-        {
-            /*
-            using (var client = new HttpClient())
-            {
-                using (var response = await client.GetAsync(attachmentUrl))
-                {
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    var base64String = Convert.ToBase64String(bytes);
-                    return base64String;
-                }
-            }
-            */
 
-            // var net = new System.Net.WebClient();
-
-            // byte[] fileBytes = System.IO.File.ReadAllBytes(attachmentUrl);
-            // return fileBytes.ToString();
-
-            byte[] bytes = File.ReadAllBytes(filePath);
-            string base64String = Convert.ToBase64String(bytes);
-            return base64String;
-
-        }
-
-    
     }
 }

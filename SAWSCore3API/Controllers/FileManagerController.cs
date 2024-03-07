@@ -24,7 +24,6 @@ using SAWSCore3API.Models;
 using SAWSCore3API.Services;
 using SAWSCore3API.Helpers;
 using Microsoft.AspNetCore.Authorization;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SAWSCore3API.Controllers
 {
@@ -46,7 +45,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost]
         [Route("PostDocsForAdvert")]
-        public async Task<IActionResult> PostDocsForAdvert([FromForm] IList<DocAdvert> files)
+        public IActionResult PostDocsForAdvert([FromForm] IList<DocAdvert> files)
         {
 
             if (!ModelState.IsValid)
@@ -88,37 +87,12 @@ namespace SAWSCore3API.Controllers
                         postedFile.CopyTo(stream);
                     }
 
-                    /*using (Image image = Image.FromFile(Path))
-                    {
-                        using (MemoryStream m = new MemoryStream())
-                        {
-                            image.Save(m, image.RawFormat);
-                            byte[] imageBytes = m.ToArray();
-
-                            // Convert byte[] to Base64 String
-                            string base64String = Convert.ToBase64String(imageBytes);
-                            return base64String;
-                        }
-                    }*/
-
-                    /*byte[] fileBytes = System.IO.File.ReadAllBytes(file.file_url);*/
-
-                    string base64StringUrl = await logic.FileToBase64(file.file_url);
-                    /*string base64String = Convert.ToBase64String(fileBytes);*/
-
                     //populate dbFileObject less the raw file
-
-                    // var net = new System.Net.WebClient();
-
-                    // byte[] fileBytes = System.IO.File.ReadAllBytes(file.file_url);
-
-
                     dbItem.Id = file.Id;
                     dbItem.advertId = file.advertId;
                     dbItem.DocTypeName = file.DocTypeName;
                     dbItem.file_origname = fileName;
-                    dbItem.file_url = file.file_url;
-                    dbItem.image_url = base64StringUrl.ToString();
+                    dbItem.file_url = fileUrl;
                     dbItem.file_size = filesize;
                     dbItem.file_mimetype = mimeType;
                     dbItem.file_extention = fileExtension;
@@ -176,9 +150,8 @@ namespace SAWSCore3API.Controllers
             byte[] fileBytes = System.IO.File.ReadAllBytes(item.file_url);
             var contentType = item.file_mimetype;
             var fileName = item.file_origname;
-            var base64String = Convert.ToBase64String(fileBytes);
 
-            return File(base64String, contentType, fileName);
+            return File(fileBytes, contentType, fileName);
 
         }
 
