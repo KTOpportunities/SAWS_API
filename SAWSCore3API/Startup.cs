@@ -12,16 +12,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+// using Microsoft.AspNetCore.Builder;
+// using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+// using Microsoft.Extensions.Configuration;
+// using Microsoft.Extensions.DependencyInjection;
+// using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.AspNetCore.Mvc;
+// using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -32,6 +32,8 @@ using SAWSCore3API.Helpers;
 using SAWSCore3API.Services;
 using SAWSCore3API.DBModels;
 using SAWSCore3API.Authentication;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace MySqlCore3API
 {
@@ -39,6 +41,8 @@ namespace MySqlCore3API
     {
         readonly string DefaultCorsPolicy = "DefaultCorsPolicy";
         public IConfiguration Configuration { get; }
+
+        //  private IWebHostEnvironment Environment;
 
         public Startup(IConfiguration configuration)
         {
@@ -254,6 +258,18 @@ namespace MySqlCore3API
             {
                 endpoints.MapControllers();
             });
+
+
+            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(env.ContentRootPath,  @"Uploads")),
+                RequestPath = "/Uploads"
+            });
+
         }
+
+        
     }
 }
