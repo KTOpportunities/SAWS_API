@@ -150,7 +150,11 @@ namespace SAWSCore3API.Controllers
                 List<Advert> records = new List<Advert>();
                 records = logic.GetAllAdverts().ToList();
 
-                return Ok(records);
+                var toReturn = records.Select(ad => new { advertId = ad.advertId,
+                advert_url = ad.advert_url,
+                 base64_file_url = ad.DocAdverts.FirstOrDefault()?.base64_file_url }).ToList();
+
+                return Ok(toReturn);
             }
             catch (Exception err)
             {
