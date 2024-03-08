@@ -152,7 +152,7 @@ namespace SAWSCore3API.Controllers
 
                 var toReturn = records.Select(ad => new { advertId = ad.advertId,
                 advert_url = ad.advert_url,
-                 base64_file_url = ad.DocAdverts.FirstOrDefault()?.base64_file_url }).ToList();
+                 file_url = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + ad.advertId + "/" + ad.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + ad.DocAdverts.FirstOrDefault()?.file_origname }).ToList();
 
                 return Ok(toReturn);
             }
@@ -175,12 +175,6 @@ namespace SAWSCore3API.Controllers
                 return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
             }
 
-            // DBLogic logic = new DBLogic(_context);
-
-            // var feedbacks = logic.GetFeedbackById(id);
-
-            // return Ok(feedbacks);
-
              if (ModelState.IsValid)
             {
                 var advert = _context.Adverts
@@ -190,7 +184,12 @@ namespace SAWSCore3API.Controllers
 
                 if (advert != null)
                 { 
-                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully returned advert", DetailDescription = advert }); 
+                    string fileUrl = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
+                    
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully returned advert", DetailDescription = new {
+                    Advert = advert,
+                    FileUrl = fileUrl
+                } }); 
                 }
                 else
                 {

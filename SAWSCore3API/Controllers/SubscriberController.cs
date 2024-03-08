@@ -22,6 +22,15 @@ using SAWSCore3API.Models;
 using SAWSCore3API.Services;
 using SAWSCore3API.Helpers;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
+
+using PayFast;
+using PayFast.AspNetCore;
+using SAWSCore3API.Wrappers;
+using System.IO;
+using System.Net;
+
 
 namespace SAWSCore3API.Controllers
 {
@@ -37,6 +46,10 @@ namespace SAWSCore3API.Controllers
         private readonly ILogger<AuthenticateController> _logger;
         private readonly IUriService uriService;
 
+        private readonly PayFastSettings payFastSettings;
+
+
+
 
         public SubscriberController(UserManager<ApplicationUser> userManager,
                                       RoleManager<IdentityRole> roleManager,
@@ -44,6 +57,7 @@ namespace SAWSCore3API.Controllers
                                       ApplicationDbContext dbContext,
                                       IOptions<SmptSetting> appSMTPSettings,
                                       ILogger<AuthenticateController> logger,
+                                      IOptions<PayFastSettings> payFastSettings,
                                       IUriService uriService)
         {
             this.userManager = userManager;
@@ -53,6 +67,8 @@ namespace SAWSCore3API.Controllers
             this._appSMTPSettings = appSMTPSettings;
             _logger = logger;
             this.uriService = uriService;
+
+            this.payFastSettings = payFastSettings.Value;
 
         }
 
@@ -95,5 +111,74 @@ namespace SAWSCore3API.Controllers
                 return BadRequest(new Response { Status = "Error", Message = err.Message });
             }
         }
+
+
+
+        #region PayFast
+        [HttpPost]
+        [Route("MakeRecurringPayment")]
+        [AllowAnonymous]
+        //PayFastRequest request
+        public async Task<IActionResult> MakeRecurringPayment([FromBody] PaymentModel2 request )
+        {
+
+            var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
+
+            // Merchant Details
+            recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
+            recurringRequest.merchant_key = _configuration.GetValue<string>("payFast:merchant_key");
+            recurringRequest.return_url = this.payFastSettings.ReturnUrl;
+            recurringRequest.cancel_url = this.payFastSettings.CancelUrl;
+            recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
+
+
+            // Buyer Details
+            recurringRequest.email_address = request.email_address;
+            recurringRequest.name_first = request.name_first;
+            recurringRequest.name_last = request.name_last;
+
+            // Transaction Details
+            recurringRequest.m_payment_id = request.m_payment_id;
+            recurringRequest.amount = request.amount;
+            recurringRequest.item_name = request.item_name;
+            recurringRequest.item_description = request.item_description;
+
+            // Transaction Options
+            recurringRequest.email_confirmation = request.email_confirmation;
+            recurringRequest.confirmation_address = request.confirmation_email;
+
+            // Recurring Billing Details
+            recurringRequest.subscription_type = SubscriptionType.Subscription;
+            recurringRequest.billing_date = DateTime.Now;
+            recurringRequest.recurring_amount = request.recurring_amount;
+            
+            if((request.frequency).ToLower() == "monthly")
+            {
+              recurringRequest.frequency = BillingFrequency.Monthly;
+            }
+            else
+            {
+              recurringRequest.frequency = BillingFrequency.Annual;
+            }
+            
+            recurringRequest.cycles = 0;
+
+            var redirectUrl = $"{this.payFastSettings.ProcessUrl}{recurringRequest.ToString()}";
+
+            //int pos = redirectUrl.LastIndexOf("=") + 1;
+
+            //var signature = redirectUrl.Substring(pos, redirectUrl.Length - pos);
+
+            //Console.WriteLine(redirectUrl);
+
+            //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
+            var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
+
+            return Ok(redirectLink);
+
+        }
+
+
+        #endregion
     }
 }

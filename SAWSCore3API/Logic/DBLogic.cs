@@ -415,7 +415,7 @@ namespace SAWSCore3API.Logic
         {
              bool insertMode = item.Id == 0;
 
-            item.base64_file_url = FileToBase64(item.file_url);
+            // item.base64_file_url = FileToBase64(item.file_url);
 
             try
             {
@@ -464,7 +464,7 @@ namespace SAWSCore3API.Logic
         {
             bool insertMode = item.Id == 0;
 
-            item.base64_file_url = FileToBase64(item.file_url);
+            // item.base64_file_url = FileToBase64(item.file_url);
 
             try
             {

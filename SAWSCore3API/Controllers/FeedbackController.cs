@@ -28,7 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace SAWSCore3API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
+    [ApiController]    
     public class FeedbackController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
