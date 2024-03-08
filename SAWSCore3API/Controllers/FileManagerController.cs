@@ -63,7 +63,7 @@ namespace SAWSCore3API.Controllers
                 try
                 {
                     var folderId = Convert.ToString(file.advertId);
-                    var rootPath = Path.Combine(Environment.ContentRootPath, "Uploads"); ;
+                    var rootPath = Path.Combine(Environment.ContentRootPath, "Uploads");
                     //Create the Directory.
                     string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Advert\\");
                     if (!Directory.Exists(path))
