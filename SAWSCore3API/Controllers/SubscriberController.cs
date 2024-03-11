@@ -187,7 +187,7 @@ namespace SAWSCore3API.Controllers
             //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
             var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
 
-                subscritpitonUrl.url = redirectUrl.ToString();
+                subscritpitonUrl.url = redirectLink.ToString();
 
 
 
