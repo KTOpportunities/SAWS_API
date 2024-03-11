@@ -122,7 +122,20 @@ namespace SAWSCore3API.Controllers
         public async Task<IActionResult> MakeRecurringPayment([FromBody] PaymentModel2 request )
         {
 
-            var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+
+
+       
+
+                var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
+
+                var subscritpitonUrl = new subscriptionresponse();
 
             // Merchant Details
             recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
@@ -174,7 +187,21 @@ namespace SAWSCore3API.Controllers
             //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
             var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
 
-            return Ok(redirectLink);
+                subscritpitonUrl.url = redirectUrl.ToString();
+
+
+
+            return Ok(subscritpitonUrl);
+
+
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                //return BadRequest();
+                //throw;
+                return BadRequest(new Response { Status = "Error", Message = err.Message });
+            }
 
         }
 
