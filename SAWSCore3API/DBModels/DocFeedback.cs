@@ -24,7 +24,6 @@ namespace SAWSCore3API.DBModels
         public string file_origname { get; set; }
         public string file_seqname { get; set; }
         public string file_url { get; set; }
-        public string base64_file_url { get; set; }
         public string file_mimetype { get; set; }
         public long? file_size { get; set; }
         public string file_extention { get; set; }
