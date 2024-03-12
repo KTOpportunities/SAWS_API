@@ -345,9 +345,20 @@ namespace SAWSCore3API.Controllers
 
             DBLogic logic = new DBLogic(_context);
 
-            var feedbacks = logic.GetFeedbackById(id);
+            var feedback = logic.GetFeedbackById(id);
 
-            return Ok(feedbacks);
+            if (feedback != null)
+            {
+                foreach (var feedbackMessage in feedback.FeedbackMessages)
+                {
+                    foreach (var docFeedback in feedbackMessage.DocFeedbacks)
+                    {
+                        docFeedback.file_url = $"http://qa.j-cred.co.za/aviationappapi/Uploads/{docFeedback.Id}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
+                    }
+                }
+            }
+            
+            return Ok(feedback);
         }
 
         [HttpGet]

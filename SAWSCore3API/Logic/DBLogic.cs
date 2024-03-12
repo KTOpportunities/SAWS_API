@@ -415,8 +415,6 @@ namespace SAWSCore3API.Logic
         {
              bool insertMode = item.Id == 0;
 
-            // item.base64_file_url = FileToBase64(item.file_url);
-
             try
             {
                 if (item != null)
@@ -463,8 +461,6 @@ namespace SAWSCore3API.Logic
         public DocFeedback InsertUpdateDocFeedback(DocFeedback item)
         {
             bool insertMode = item.Id == 0;
-
-            // item.base64_file_url = FileToBase64(item.file_url);
 
             try
             {
@@ -708,13 +704,13 @@ namespace SAWSCore3API.Logic
             return toReturn.ToList();
         }
 
-        public string FileToBase64(string filePath)
-        {
-            byte[] bytes = File.ReadAllBytes(filePath);
-            string base64String = Convert.ToBase64String(bytes);
+        // public string FileToBase64(string filePath)
+        // {
+        //     byte[] bytes = File.ReadAllBytes(filePath);
+        //     string base64String = Convert.ToBase64String(bytes);
             
-            return base64String;
-        }
+        //     return base64String;
+        // }
 
 
     }
