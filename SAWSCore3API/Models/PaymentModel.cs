@@ -68,4 +68,9 @@ namespace SAWSCore3API.Models
 
 
     }
+
+    public class subscriptionresponse
+    {
+       public string url { get; set; }
+    }
 }
