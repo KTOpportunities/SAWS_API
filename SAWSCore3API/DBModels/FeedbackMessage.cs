@@ -28,7 +28,7 @@ namespace SAWSCore3API.DBModels
         public string feedbackAttachment { get; set; }
         public string feedbackAttachmentFileName { get; set; }
         public string responseAttachment { get; set; }
-        public string selectedFileName { get; set; }
+        public string responseAttachmentFileName { get; set; }
         public DateTime? created_at { get; set; }
         public DateTime? updated_at { get; set; }
         public bool? isdeleted { get; set; }
