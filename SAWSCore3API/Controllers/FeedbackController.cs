@@ -353,7 +353,7 @@ namespace SAWSCore3API.Controllers
                 {
                     foreach (var docFeedback in feedbackMessage.DocFeedbacks)
                     {
-                        docFeedback.file_url = $"http://qa.j-cred.co.za/aviationappapi/Uploads/{docFeedback.Id}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
+                        docFeedback.file_url = $"http://qa.j-cred.co.za/aviationappapi/Uploads/{docFeedback.feedbackMessageId}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
                     }
                 }
             }
