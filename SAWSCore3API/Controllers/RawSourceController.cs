@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using FluentFTP;
 using System.Text;
+using SAWSCore3API.Models;
 
 namespace SAWSCore3API.Controllers
 {
@@ -33,26 +34,28 @@ namespace SAWSCore3API.Controllers
             this._configuration = configuration;
         }
 
-        [HttpGet("getSourceTestFolderFiles")]
-        public async Task<IActionResult> getSourceTestFolderFiles(string folderName)
+        [HttpGet("GetSourceTextFolderFiles")]
+        public async Task<IActionResult> GetSourceTextFolderFiles(string textfoldername)
         {
             //get credentials from _config
             string ftpHost, username, password,rootFolder = "";
             ftpHost  = _configuration["FtpSettings:host"];
             username = _configuration["FtpSettings:username"];
             password = _configuration["FtpSettings:password"];
-            rootFolder = "/" + _configuration["FtpSettings:AviationData"];
-            string alerts = rootFolder + "/htdocs/text/alerts";
-            List<string> textFiles = new List<string>();
+            rootFolder = "/home/aviapp/" + _configuration["FtpSettings:mainfolder"];
+            string alerts = rootFolder + "/text/"+ textfoldername;//"/aviation/text/alerts";
+            List<TextFile> textFiles = new List<TextFile>();
+            List<FtpListItem> ftpListItems = new List<FtpListItem>();
 
             var client = new AsyncFtpClient(ftpHost, username, password); //new FtpClient(ftpHost, username, password);
             var asyncClient = new AsyncFtpClient(ftpHost, username, password);
 
             // connect to the server and automatically detect working FTP settings
             await client.AutoConnect();
-
+  
+            //var ftpListItems2 = await client.GetListing(alerts);
             // get a list of files and directories in the "/htdocs" folder
-            foreach (FtpListItem item in await client.GetListing( rootFolder))
+            foreach (FtpListItem item in await client.GetListing(alerts))
             {
 
                 // if this is a file
@@ -60,38 +63,34 @@ namespace SAWSCore3API.Controllers
                 {
 
                     // get the file size
-                    long size = await client.GetFileSize(item.FullName);
+                    //long size = await client.GetFileSize(item.FullName);
+                    string filename = item.Name;
+                    DateTime fileModDateTime = await client.GetModifiedTime(item.FullName);
+                  
+                    var stream = new MemoryStream();
 
-                    // calculate a hash for the file on the server side (default algorithm)
-                    FtpHash hash = await client .GetChecksum(item.FullName);
-
-                    if (await client.DirectoryExists(alerts))
+                    if (!await client.DownloadStream(stream, item.FullName))
                     {
-                        // download a folder and all its files
-                        //await client.DownloadDirectory(@"C:\website\logs\", @"/public_html/logs", FtpFolderSyncMode.Update);
-                        var stream = new MemoryStream();
-
-                        if (!await client.DownloadStream(stream, item.FullName))
-                        {
-                            throw new Exception("Cannot read file");
-                        }
-                        stream.Position = 0;
-                        StreamReader reader = new StreamReader(stream);
-                        string textContents = reader.ReadToEnd();
-                        textFiles.Add(textContents);
-                        //string contents = Encoding.UTF8.GetString(stream);
+                    // throw new Exception("Cannot read file");
+                        continue;
                     }
+                    stream.Position = 0;
+                    StreamReader reader = new StreamReader(stream);
+                    string textContents = reader.ReadToEnd();
+
+                    //We probably need to push this the db, then API would read from DB
+                    TextFile textFile = new TextFile();
+                    textFile.filename = filename;
+                    textFile.foldername = textfoldername;
+                    textFile.lastmodified = fileModDateTime;
+                    textFile.filetextcontent = textContents;
+
+                    textFiles.Add(textFile);
                 }
 
-                // get modified date/time of the file or folder
-                DateTime time = await client.GetModifiedTime(item.FullName);
-
             }
-
-            
-            
-
-
+            //order by lastmodified descending.
+            textFiles = textFiles.OrderByDescending(d => d.lastmodified).ToList();
             return Ok(textFiles);
 
         }
