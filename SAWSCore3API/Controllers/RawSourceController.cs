@@ -42,7 +42,7 @@ namespace SAWSCore3API.Controllers
             ftpHost  = _configuration["FtpSettings:host"];
             username = _configuration["FtpSettings:username"];
             password = _configuration["FtpSettings:password"];
-            rootFolder = "/home/aviapp/" + _configuration["FtpSettings:mainfolder"];
+            rootFolder =  _configuration["FtpSettings:mainfolder"];
             string alerts = rootFolder + "/text/"+ textfoldername;//"/aviation/text/alerts";
             List<TextFile> textFiles = new List<TextFile>();
             List<FtpListItem> ftpListItems = new List<FtpListItem>();
