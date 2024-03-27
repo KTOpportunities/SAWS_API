@@ -140,8 +140,8 @@ namespace SAWSCore3API.Controllers
             // Merchant Details
             recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
             recurringRequest.merchant_key = _configuration.GetValue<string>("payFast:merchant_key");
-            recurringRequest.return_url = this.payFastSettings.ReturnUrl;
-            recurringRequest.cancel_url = this.payFastSettings.CancelUrl;
+            recurringRequest.return_url = request.returnUrl;
+            recurringRequest.cancel_url = request.CancelUrl;
             recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
 
 
