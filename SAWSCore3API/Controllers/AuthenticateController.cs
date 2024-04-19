@@ -64,7 +64,9 @@ namespace SAWSCore3API.Controllers
         {
             ApplicationUser user = null;
 
-            user = _context.User.Where(user => user.UserName == appUser.Username || user.Email == appUser.Username).SingleOrDefault();
+            user = _context.User
+                    .Where(user => (user.UserName == appUser.Username || user.Email == appUser.Username) && user.IsActive == true)
+                    .SingleOrDefault();
 
             
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -108,12 +110,18 @@ namespace SAWSCore3API.Controllers
                 //userObj = _context.users.Where(d => d.id == usermap.userid).SingleOrDefault();
                 if (signInResult.Succeeded)
                 {
+
+                    var userProfile = _context.userProfiles
+                        .FirstOrDefault(up => up.aspuid == user.Id);
+
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token)
                         ,expiration = token.ValidTo
                         ,aspUserID  = user.Id.ToString()
+                        ,fullname = userProfile != null ? userProfile.fullname : ""
                         ,aspUserName = user.UserName
+                        ,aspUserEmail = user.Email
                         ,rolesList  = rolesList
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
@@ -149,6 +157,7 @@ namespace SAWSCore3API.Controllers
                 {
                     UserName = appUser.Username,
                     Email = appUser.Email,
+                    IsActive = true,
                     
                 };
 
@@ -201,7 +210,7 @@ namespace SAWSCore3API.Controllers
                     {
                         UserName = appUser.Username,
                         Email = appUser.Email,
-
+                        IsActive = true,
                     };
 
                     var result = await userManager.CreateAsync(user, appUser.Password);
@@ -275,6 +284,38 @@ namespace SAWSCore3API.Controllers
                 DBLogic logic = new DBLogic(_context);
                 logic.InsertUpdateUserProfile(userProfile);
 
+                //update identity email
+                try {
+                    var aspIdentityId = userProfile.aspuid;
+
+                    if (!String.IsNullOrEmpty(aspIdentityId))
+                    {
+                        var user = await userManager.FindByIdAsync(aspIdentityId);
+                        if (user != null)
+                        {
+                            user.Email = userProfile.email;
+                            user.UserName = userProfile.email;
+
+                            var result = await userManager.UpdateAsync(user);
+
+
+                            if (result.Succeeded)
+                            {
+                                //return RedirectToAction("Account");
+                            }
+                            else
+                            {
+                               
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception err)
+                { 
+
+                }
+
                 return Ok(userProfile);
 
             }
@@ -289,7 +330,7 @@ namespace SAWSCore3API.Controllers
 
         [Authorize]
         [HttpDelete("DeleteUserProfileById")]
-        public async Task<IActionResult> DeleteUserProfileById(int id)
+        public async Task<IActionResult> DeleteUserProfileById(int id, string aspuid)
         {
             if (!ModelState.IsValid)
             {
@@ -300,6 +341,36 @@ namespace SAWSCore3API.Controllers
             {
                 DBLogic logic = new DBLogic(_context);
                 logic.DeleteUserProfileById(id);
+
+                 //update identity isActive
+                try {               
+
+                    if (!String.IsNullOrEmpty(aspuid))
+                    {
+                        var user = await userManager.FindByIdAsync(aspuid);
+                        if (user != null)
+                        {
+                            user.IsActive = false;
+
+                            var result = await userManager.UpdateAsync(user);
+
+                            if (result.Succeeded)
+                            {
+                                //return RedirectToAction("Account");
+                            }
+                            else
+                            {
+                               
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception err)
+                { 
+
+                }
+
                 return Ok();
             }
             catch (Exception err)
@@ -334,10 +405,42 @@ namespace SAWSCore3API.Controllers
         {
 
 
-            //var users = userManager.Users.Where(d => d.deleted == false);
-            
+            var users = userManager.Users;
 
+            if (users != null)
+            {
+            return Ok(users);
+            }            
+            
             return Unauthorized(new { response = "Invalid users" });
+
+        }
+
+        [Authorize]
+        [HttpGet("GetLoggedInUser")]
+        public async Task<IActionResult> GetLoggedInUser(string Id)
+        {
+
+            var user = await userManager.FindByIdAsync(Id);
+
+            if (user != null)
+            {
+                var userRoles = await userManager.GetRolesAsync(user);
+                List<string> roles = (List<string>)userRoles;
+                string rolesList = string.Join(",", roles.ToArray());
+
+                return Ok(new
+                    {
+                        userID  = user.Id.ToString(),
+                        userName = user.UserName,
+                        userEmail = user.Email,
+                        userRole  = rolesList
+                    });
+            }
+            else
+            {
+                return NotFound(new { response = "User not found" });
+            }
         }
 
 
@@ -434,10 +537,10 @@ namespace SAWSCore3API.Controllers
             return Unauthorized(new { response = "Invalid email" });
         }
 
-        [HttpGet("LoginUserNameExist")]
-        public async Task<IActionResult> LoginUserNameExist(string username)
+        [HttpGet("LoginEmailExist")]
+        public async Task<IActionResult> LoginEmailExist(string email)
         {
-            var user = await userManager.FindByNameAsync(username);
+            var user = await userManager.FindByEmailAsync(email);
 
             if (user != null)
             {
