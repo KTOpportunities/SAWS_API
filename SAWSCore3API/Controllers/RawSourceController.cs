@@ -28,6 +28,9 @@ namespace SAWSCore3API.Controllers
         private readonly IConfiguration _configuration;
 
         private const int LASTHOURS = 48;
+
+        public object Extentions { get; private set; }
+
         public RawSourceController(
             IWebHostEnvironment _environment,
             ApplicationDbContext dbContext,
@@ -197,6 +200,46 @@ namespace SAWSCore3API.Controllers
 
             if (await client.FileExists(downftpUrl))
             {
+                try 
+                {
+                    var item = await client.GetObjectInfo(downftpUrl);
+
+                    if (item !=null)
+                    { 
+                        string filename = ""; string textfoldername = ""; string textContents = "";
+                        DateTime fileModDateTime = await client.GetModifiedTime(item.FullName);
+
+                        TextFile textFile = new TextFile();
+                        textFile.filename = item.Name;
+                        textFile.foldername = imagefoldername;
+                        textFile.lastmodified = fileModDateTime;
+
+
+                        var stream = new MemoryStream();
+
+                        if (!await client.DownloadStream(stream, item.FullName))
+                        {
+                            // throw new Exception("Cannot read file");
+                            
+                        }
+
+                        //stream.Position = 0;
+
+                        textContents = Convert.ToBase64String(stream.ToArray()); 
+
+                        //StreamReader reader = new StreamReader(stream);
+                        //var streamData = reader.ReadToEnd();
+
+                        textFile.filetextcontent = textContents;
+
+                        return Ok(textFile);
+                    }
+
+                }
+                catch (Exception err) 
+                { 
+
+                }
                 //var net = new System.Net.WebClient();
                 //TODO
                 /*
