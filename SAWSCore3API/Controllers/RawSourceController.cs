@@ -267,7 +267,163 @@ namespace SAWSCore3API.Controllers
 
         }
 
+        [HttpGet("GetSourceAviationFolderFilesList")]
+        public async Task<IActionResult> GetSourceAviationFolderFilesList(string imagefoldername, int lasthours = LASTHOURS)
+        {
+            //get credentials from _config
+            string ftpHost, username, password, rootFolder = "";
+            ftpHost = _configuration["FtpSettings:host"];
+            username = _configuration["FtpSettings:username"];
+            password = _configuration["FtpSettings:password"];
+            rootFolder = _configuration["FtpSettings:mainfolder"];
+            string alerts = rootFolder + "/aviation/" + imagefoldername;
+            List<TextFile> textFiles = new List<TextFile>();
+            List<FtpListItem> ftpListItems = new List<FtpListItem>();
 
+            var client = new AsyncFtpClient(ftpHost, username, password); //new FtpClient(ftpHost, username, password);
+            var asyncClient = new AsyncFtpClient(ftpHost, username, password);
+
+            // connect to the server and automatically detect working FTP settings
+            await client.AutoConnect();
+
+            //var ftpListItems2 = await client.GetListing(alerts);
+            // get a list of files and directories in the "/htdocs" folder
+            DateTime fileAfterThisDateTime = DateTime.Now.AddHours(lasthours * -1);
+
+            foreach (FtpListItem item in await client.GetListing(alerts))
+            {
+
+                // if this is a file
+                if (item.Type == FtpObjectType.File)
+                {
+
+                    // get the file size
+                    //long size = await client.GetFileSize(item.FullName);
+                    string filename = item.Name;
+                    DateTime fileModDateTime = await client.GetModifiedTime(item.FullName);
+
+                    //var stream = new MemoryStream();
+
+                    //if (!await client.DownloadStream(stream, item.FullName))
+                    {
+                        // throw new Exception("Cannot read file");
+                        //continue;
+                    }
+                    //stream.Position = 0;
+                    //StreamReader reader = new StreamReader(stream);
+                    // string textContents = reader.ReadToEnd();
+
+                    //We probably need to push this the db, then API would read from DB
+
+                    if (fileModDateTime > fileAfterThisDateTime)
+                    {
+                        TextFile textFile = new TextFile();
+                        textFile.filename = filename;
+                        textFile.foldername = imagefoldername;
+                        textFile.lastmodified = fileModDateTime;
+                        textFile.filetextcontent = "IMAGES CONTENT NOT LOADED";
+
+                        textFiles.Add(textFile);
+                    }
+                }
+
+            }
+            //order by lastmodified descending.
+            textFiles = textFiles.OrderByDescending(d => d.lastmodified).ToList();
+            return Ok(textFiles);
+
+        }
+
+
+        [HttpGet("GetAviationFile")]
+        public async Task<IActionResult> GetAviationFile(string imagefoldername, string imagefilename)
+        {
+            //get credentials from _config
+            string ftpHost, username, password, rootFolder = "";
+            ftpHost = _configuration["FtpSettings:host"];
+            username = _configuration["FtpSettings:username"];
+            password = _configuration["FtpSettings:password"];
+            rootFolder = _configuration["FtpSettings:mainfolder"];
+            string alerts = rootFolder + "/aviation/" + imagefoldername;
+            List<TextFile> textFiles = new List<TextFile>();
+            List<FtpListItem> ftpListItems = new List<FtpListItem>();
+
+            var client = new AsyncFtpClient(ftpHost, username, password); //new FtpClient(ftpHost, username, password);
+            var asyncClient = new AsyncFtpClient(ftpHost, username, password);
+
+            // connect to the server and automatically detect working FTP settings
+            await client.AutoConnect();
+
+            string downftpUrl = alerts + "/" + imagefilename;
+
+            if (await client.FileExists(downftpUrl))
+            {
+                try
+                {
+                    var item = await client.GetObjectInfo(downftpUrl);
+
+                    if (item != null)
+                    {
+                        string filename = ""; string textfoldername = ""; string textContents = "";
+                        DateTime fileModDateTime = await client.GetModifiedTime(item.FullName);
+
+                        TextFile textFile = new TextFile();
+                        textFile.filename = item.Name;
+                        textFile.foldername = imagefoldername;
+                        textFile.lastmodified = fileModDateTime;
+
+
+                        var stream = new MemoryStream();
+
+                        if (!await client.DownloadStream(stream, item.FullName))
+                        {
+                            // throw new Exception("Cannot read file");
+
+                        }
+
+                        //stream.Position = 0;
+
+                        textContents = Convert.ToBase64String(stream.ToArray());
+
+                        //StreamReader reader = new StreamReader(stream);
+                        //var streamData = reader.ReadToEnd();
+
+                        textFile.filetextcontent = textContents;
+
+                        return Ok(textFile);
+                    }
+
+                }
+                catch (Exception err)
+                {
+
+                }
+                //var net = new System.Net.WebClient();
+                //TODO
+                /*
+                byte[] fileBytes;// = System.IO.File.ReadAllBytes(item.file_url);
+                
+
+                var downloadedFile = await client.DownloadBytes(downftpUrl);
+                var contentType = item.file_mimetype;
+                var fileName = item.file_origname;
+
+                return File(downloadedFile, contentType, fileName);
+                */
+                return Ok("file exist on the ftp");
+            }
+            else
+            {
+                //return BadRequest(new { message : "File not found" });
+                return BadRequest();
+            }
+
+
+
+
+            return Ok();
+
+        }
 
 
         [HttpGet("SyncFTPFolders")]
