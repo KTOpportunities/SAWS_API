@@ -13,7 +13,7 @@ namespace SAWSCore3API.DBModels
     {
         [Key]
         public int subscriptionId { get; set; }
-        public dynamic userprofileid { get; set; }
+        public int userprofileid { get; set; }
         [Required]
         public string package_name { get; set; }
         public int package_id { get; set; }

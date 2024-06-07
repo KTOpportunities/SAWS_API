@@ -123,6 +123,8 @@ namespace SAWSCore3API.Controllers
                         ,aspUserName = user.UserName
                         ,aspUserEmail = user.Email
                         ,rolesList  = rolesList
+                        ,userprofileid = userProfile != null ? userProfile.userprofileid : 0
+                        ,userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
                 }
