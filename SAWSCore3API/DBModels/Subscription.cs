@@ -21,7 +21,8 @@ namespace SAWSCore3API.DBModels
         public DateTime start_date { get; set; }
         public DateTime end_date { get; set; }
         public int subscription_duration { get; set; }
-
+        public string subscription_token { get; set; }
+        public string subscription_status { get; set; }
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }
         public bool? isdeleted { get; set; }

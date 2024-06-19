@@ -30,6 +30,8 @@ using PayFast.AspNetCore;
 using SAWSCore3API.Wrappers;
 using System.IO;
 using System.Net;
+using Org.BouncyCastle.Asn1.Cmp;
+using Org.BouncyCastle.Asn1.Crmf;
 
 
 namespace SAWSCore3API.Controllers
@@ -74,7 +76,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetPagedAllSubscribers")]
-        [AllowAnonymous]        
+        [AllowAnonymous]
         public IActionResult GetPagedAllUsers([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -90,13 +92,13 @@ namespace SAWSCore3API.Controllers
                 var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
 
                 var pagedData = _context.userProfiles
-                    .Where(d => d.isdeleted == false && d.userrole=="Subscriber")
+                    .Where(d => d.isdeleted == false && d.userrole == "Subscriber")
                     .Include(d => d.Subscription)
                     .OrderByDescending(d => d.userprofileid)
                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                .Take(validFilter.PageSize)
                .ToList();
-                var totalRecords = _context.userProfiles.Where(d => d.isdeleted == false && d.userrole=="Subscriber").Count();
+                var totalRecords = _context.userProfiles.Where(d => d.isdeleted == false && d.userrole == "Subscriber").Count();
 
                 //return Ok(new PagedResponse<List<cbbuser>>(pagedData, validFilter.PageNumber, validFilter.PageSize));
                 var pagedReponse = PaginationHelper.CreatePagedReponse<UserProfile>(pagedData, validFilter, totalRecords, uriService, route);
@@ -119,9 +121,8 @@ namespace SAWSCore3API.Controllers
         [Route("MakeRecurringPayment")]
         [AllowAnonymous]
         //PayFastRequest request
-        public async Task<IActionResult> MakeRecurringPayment([FromBody] PaymentModel2 request )
+        public async Task<IActionResult> MakeRecurringPayment([FromBody] PaymentModel2 request)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
@@ -129,70 +130,62 @@ namespace SAWSCore3API.Controllers
 
             try
             {
-
-
-       
-
                 var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
-
                 var subscritpitonUrl = new subscriptionresponse();
 
-            // Merchant Details
-            recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
-            recurringRequest.merchant_key = _configuration.GetValue<string>("payFast:merchant_key");
-            recurringRequest.return_url = request.returnUrl;
-            recurringRequest.cancel_url = request.CancelUrl;
-            recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
+                // Merchant Details
+                recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
+                recurringRequest.merchant_key = _configuration.GetValue<string>("payFast:merchant_key");
+                recurringRequest.return_url = request.returnUrl;
+                recurringRequest.cancel_url = request.CancelUrl;
+                recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
 
+                // Buyer Details
+                recurringRequest.email_address = request.email_address;
+                recurringRequest.name_first = request.name_first;
+                recurringRequest.name_last = request.name_last;
 
-            // Buyer Details
-            recurringRequest.email_address = request.email_address;
-            recurringRequest.name_first = request.name_first;
-            recurringRequest.name_last = request.name_last;
+                // Transaction Details
+                recurringRequest.m_payment_id = request.m_payment_id;
+                recurringRequest.amount = request.amount;
+                recurringRequest.item_name = request.item_name;
+                recurringRequest.item_description = request.item_description;
 
-            // Transaction Details
-            recurringRequest.m_payment_id = request.m_payment_id;
-            recurringRequest.amount = request.amount;
-            recurringRequest.item_name = request.item_name;
-            recurringRequest.item_description = request.item_description;
+                // Transaction Options
+                recurringRequest.email_confirmation = request.email_confirmation;
+                recurringRequest.confirmation_address = request.confirmation_email;
 
-            // Transaction Options
-            recurringRequest.email_confirmation = request.email_confirmation;
-            recurringRequest.confirmation_address = request.confirmation_email;
+                // Recurring Billing Details
+                recurringRequest.subscription_type = SubscriptionType.Subscription;
+                recurringRequest.billing_date = DateTime.Now;
+                recurringRequest.recurring_amount = request.recurring_amount;
 
-            // Recurring Billing Details
-            recurringRequest.subscription_type = SubscriptionType.Subscription;
-            recurringRequest.billing_date = DateTime.Now;
-            recurringRequest.recurring_amount = request.recurring_amount;
-            
-            if((request.frequency).ToLower() == "monthly")
-            {
-              recurringRequest.frequency = BillingFrequency.Monthly;
-            }
-            else
-            {
-              recurringRequest.frequency = BillingFrequency.Annual;
-            }
-            
-            recurringRequest.cycles = 0;
+                if ((request.frequency).ToLower() == "monthly")
+                {
+                    recurringRequest.frequency = BillingFrequency.Monthly;
+                }
+                else
+                {
+                    recurringRequest.frequency = BillingFrequency.Annual;
+                }
 
-            var redirectUrl = $"{this.payFastSettings.ProcessUrl}{recurringRequest.ToString()}";
+                // The number of payments/cycles that will occur for this subscription. Set to 0 for indefinite subscription.
+                recurringRequest.cycles = 0;
 
-            //int pos = redirectUrl.LastIndexOf("=") + 1;
+                var redirectUrl = $"{this.payFastSettings.ProcessUrl}{recurringRequest.ToString()}";
 
-            //var signature = redirectUrl.Substring(pos, redirectUrl.Length - pos);
+                //int pos = redirectUrl.LastIndexOf("=") + 1;
 
-            //Console.WriteLine(redirectUrl);
+                //var signature = redirectUrl.Substring(pos, redirectUrl.Length - pos);
 
-            //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
-            var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
+                //Console.WriteLine(redirectUrl);
+
+                //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
+                var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
 
                 subscritpitonUrl.url = redirectLink.ToString();
 
-
-
-            return Ok(subscritpitonUrl);
-
+                return Ok(subscritpitonUrl);
 
             }
             catch (Exception err)
@@ -204,6 +197,82 @@ namespace SAWSCore3API.Controllers
             }
 
         }
+
+        [HttpPost]
+        [Route("CancelSubscription")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CancelSubscription([FromBody] CancelSubscriptionRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                DBLogic logic = new DBLogic(_context);
+
+                using (var httpClient = new HttpClient())
+                {
+                    var endPoint = _configuration.GetValue<string>("payFast:endPoint");
+                    var merchantId = _configuration.GetValue<string>("payFast:merchant_id");
+                    var merchantKey = _configuration.GetValue<string>("payFast:merchant_key");
+                    var DateTimeNow = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:sszzz");
+                    var apiVersion = "v1";
+
+                    // Set up the request URL and headers
+                    // var requestUri = $"{endPoint}/subscriptions/{request.token}/cancel?testing={request.isTesting.ToString().ToLower()}";
+                    httpClient.DefaultRequestHeaders.Add("merchant-id", merchantId);
+                    httpClient.DefaultRequestHeaders.Add("version", apiVersion);
+                    httpClient.DefaultRequestHeaders.Add("timestamp", DateTimeNow);
+                    httpClient.DefaultRequestHeaders.Add("merchant-key", merchantKey); // Ensure this is included
+
+                    var testUrl = $"https://api.payfast.co.za/subscriptions/{request.token}/cancel?testing={request.isTesting.ToString().ToLower()}";
+
+                    var data = new Dictionary<string, string>
+                    {
+                        { "merchant-id", merchantId },
+                        { "version", apiVersion },
+                        { "timestamp", DateTimeNow },
+                        { "merchant-key", merchantKey },
+                        { "token", request.token }
+                    };
+
+                    var signature = logic.GenerateSignature(data);
+
+                    httpClient.DefaultRequestHeaders.Add("signature", signature);
+
+                    // Send the PUT request
+                    var response = await httpClient.PutAsync(testUrl, null);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var successResponse = await response.Content.ReadAsStringAsync();
+                        return Ok(new
+                        {
+                            Response = successResponse,
+                            Headers = httpClient.DefaultRequestHeaders.ToDictionary(h => h.Key, h => string.Join(", ", h.Value)),
+                            signature = signature
+                        });
+                    }
+                    else
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        return BadRequest(new Response { Status = "Error", Message = errorResponse });
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                return BadRequest(new Response { Status = "Error", Message = err.Message });
+            }
+        }
+
+
+
+
+
+
 
 
         #endregion

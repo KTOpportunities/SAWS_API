@@ -14,6 +14,8 @@ using System.Web;
 using SAWSCore3API.Authentication;
 using SAWSCore3API.DBModels;
 using SAWSCore3API.Filters;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SAWSCore3API.Logic
 {
@@ -23,12 +25,12 @@ namespace SAWSCore3API.Logic
 
         public IConfiguration _configuration { get; }
 
-        public DBLogic( ApplicationDbContext applicationDbContext)
+        public DBLogic(ApplicationDbContext applicationDbContext)
         {
             _context = applicationDbContext;
         }
 
-        public DBLogic( ApplicationDbContext applicationDbContext, IConfiguration configuration)
+        public DBLogic(ApplicationDbContext applicationDbContext, IConfiguration configuration)
         {
             _context = applicationDbContext;
             _configuration = configuration;
@@ -51,7 +53,7 @@ namespace SAWSCore3API.Logic
                         //    user.userstatusid_moddatetime = DateTime.Now;
                         //}
                         user.created_at = DateTime.Now;
-                       
+
                         _context.userProfiles.Add(user);
                     }
                     else
@@ -60,7 +62,7 @@ namespace SAWSCore3API.Logic
                     .Local
                     .FirstOrDefault(f => f.userprofileid == user.userprofileid);
 
-                      
+
                         if (local != null)
                         {
                             _context.Entry(local).State = EntityState.Detached;
@@ -130,7 +132,7 @@ namespace SAWSCore3API.Logic
             var message = "";
 
             ProcessFeedbackMessage(feedback);
-            
+
             if (feedback.feedbackId == 0)
             {
                 try
@@ -166,7 +168,7 @@ namespace SAWSCore3API.Logic
             var message = "";
 
             ProcessBroadcastMessage(feedback, broadcastId);
-            
+
             if (feedback.feedbackId == 0)
             {
                 try
@@ -198,7 +200,7 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        public void ProcessFeedbackMessage(Feedback feedback) 
+        public void ProcessFeedbackMessage(Feedback feedback)
         {
             foreach (var feedbackMessage in feedback.FeedbackMessages)
             {
@@ -207,10 +209,10 @@ namespace SAWSCore3API.Logic
                 feedbackMessage.created_at = DateTime.Now;
                 feedbackMessage.updated_at = DateTime.Now;
                 feedbackMessage.isdeleted = false;
-           }
+            }
         }
 
-           public void ProcessBroadcastMessage(Feedback feedback, string broadcastId)
+        public void ProcessBroadcastMessage(Feedback feedback, string broadcastId)
         {
             foreach (var feedbackMessage in feedback.FeedbackMessages)
             {
@@ -220,7 +222,7 @@ namespace SAWSCore3API.Logic
                 feedbackMessage.updated_at = DateTime.Now;
                 feedbackMessage.isdeleted = false;
                 feedbackMessage.broadcastId = broadcastId;
-           }
+            }
         }
 
         public string DeleteFeedback(int id)
@@ -233,7 +235,7 @@ namespace SAWSCore3API.Logic
 
                 feedback.isdeleted = true;
                 feedback.deleted_at = DateTime.Now;
-               _context.SaveChanges();
+                _context.SaveChanges();
                 message = "Success";
             }
             catch (Exception e)
@@ -244,7 +246,7 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
-        
+
         public string DeleteBroadcast(string batchId)
         {
             var message = "";
@@ -285,7 +287,7 @@ namespace SAWSCore3API.Logic
                         feedbackMessage.updated_at = DateTime.Now;
                         feedbackMessage.isdeleted = false;
                         feedbackMessage.deleted_at = null;
-                       
+
                         _context.FeedbackMessages.Add(feedbackMessage);
                     }
                     else
@@ -349,7 +351,7 @@ namespace SAWSCore3API.Logic
                     .GroupBy(d => d.broadcastId)
                     .Select(group => group.First())
                     .ToList();
-                
+
             }
             catch (Exception err)
             {
@@ -380,7 +382,7 @@ namespace SAWSCore3API.Logic
         public string PostInsertNewAdvert(Advert advert)
         {
             var message = "";
-               
+
             if (advert.advertId == 0)
             {
                 try
@@ -413,7 +415,7 @@ namespace SAWSCore3API.Logic
 
         public DocAdvert InsertUpdateDocAdvert(DocAdvert item)
         {
-             bool insertMode = item.Id == 0;
+            bool insertMode = item.Id == 0;
 
             try
             {
@@ -425,15 +427,15 @@ namespace SAWSCore3API.Logic
                         insertMode = item.Id == 0;
 
                     if (insertMode)
-                    {   
+                    {
 
                         _context.DocAdverts.Add(item);
                     }
                     else
                     {
 
-                        item.isdeleted = false;                        
-                        
+                        item.isdeleted = false;
+
                         var local = _context.Set<DocAdvert>()
                         .Local
                         .FirstOrDefault(f => (f.advertId == item.advertId) && (f.DocTypeName == item.DocTypeName));
@@ -472,15 +474,15 @@ namespace SAWSCore3API.Logic
                         insertMode = item.Id == 0;
 
                     if (insertMode)
-                    {   
+                    {
 
                         _context.DocFeedbacks.Add(item);
                     }
                     else
                     {
 
-                        item.isdeleted = false;                        
-                        
+                        item.isdeleted = false;
+
                         var local = _context.Set<DocFeedback>()
                         .Local
                         .FirstOrDefault(f => (f.feedbackMessageId == item.feedbackMessageId) && (f.DocTypeName == item.DocTypeName));
@@ -509,14 +511,14 @@ namespace SAWSCore3API.Logic
         {
             DocAdvert item = new DocAdvert();
 
-            try 
+            try
             {
                 item = _context.DocAdverts.Where(d => d.Id == Id).FirstOrDefault();
-            } 
-            catch (Exception err) 
-            { 
+            }
+            catch (Exception err)
+            {
 
-            }            
+            }
 
             return (item);
         }
@@ -555,7 +557,7 @@ namespace SAWSCore3API.Logic
                 advert.isdeleted = true;
                 advert.deleted_at = DateTime.Now;
 
-               _context.SaveChanges();
+                _context.SaveChanges();
                 message = "Success";
             }
             catch (Exception e)
@@ -568,7 +570,7 @@ namespace SAWSCore3API.Logic
         public string PostInsertSubcription(Subscription subscription)
         {
             var message = "";
- 
+
             if (subscription.subscriptionId == 0)
             {
                 try
@@ -609,7 +611,7 @@ namespace SAWSCore3API.Logic
 
                 subscription.isdeleted = true;
                 subscription.deleted_at = DateTime.Now;
-               _context.SaveChanges();
+                _context.SaveChanges();
                 message = "Success";
             }
             catch (Exception e)
@@ -651,7 +653,7 @@ namespace SAWSCore3API.Logic
             }
             return toReturn.ToList();
         }
-        
+
         public List<Service> GetServicesByPackageId(int id)
         {
             List<Service> toReturn = new List<Service>();
@@ -659,7 +661,7 @@ namespace SAWSCore3API.Logic
             try
             {
                 toReturn = _context.Services
-                           .Where(d => d.packageId==id && d.isdeleted == false) 
+                           .Where(d => d.packageId == id && d.isdeleted == false)
                            .ToList();
             }
             catch (Exception err)
@@ -676,7 +678,7 @@ namespace SAWSCore3API.Logic
             try
             {
                 toReturn = _context.ServiceProducts
-                           .Where(d => d.serviceId==id && d.isdeleted == false) 
+                           .Where(d => d.serviceId == id && d.isdeleted == false)
                            .ToList();
             }
             catch (Exception err)
@@ -708,9 +710,62 @@ namespace SAWSCore3API.Logic
         // {
         //     byte[] bytes = File.ReadAllBytes(filePath);
         //     string base64String = Convert.ToBase64String(bytes);
-            
+
         //     return base64String;
         // }
+
+        // public string GenerateSignature(string data)
+        // {
+        //     // var data = $"merchant-id={_configuration.GetValue<string>("payFast:merchant_id")}{token}";
+
+        //     // var passPhrase = _configuration.GetValue<string>("payFast:passPhrase");
+        //     // if (!string.IsNullOrEmpty(passPhrase))
+        //     // {
+        //     //     data += $"&passphrase={passPhrase}";
+        //     // }
+
+        //     using (var sha256 = SHA256.Create())
+        //     {
+        //         var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(data));
+        //         return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        //     }
+        // }
+
+        public string GenerateSignature(Dictionary<string, string> data, string passPhrase = null)
+        {
+            // Create parameter string
+            StringBuilder pfOutput = new StringBuilder();
+            foreach (var key in data.Keys)
+            {
+                if (!string.IsNullOrEmpty(data[key]))
+                {
+                    pfOutput.Append($"{key}={HttpUtility.UrlEncode(data[key].Trim()).Replace("%20", "+")}&");
+                }
+            }
+
+            // Remove last ampersand
+            string getString = pfOutput.ToString().TrimEnd('&');
+            if (!string.IsNullOrEmpty(passPhrase))
+            {
+                getString += $"&passphrase={HttpUtility.UrlEncode(passPhrase.Trim()).Replace("%20", "+")}";
+            }
+
+            // Create MD5 hash
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(getString);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // Convert the byte array to hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+        }
+
 
 
     }
