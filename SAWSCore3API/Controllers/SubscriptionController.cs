@@ -140,5 +140,34 @@ namespace SAWSCore3API.Controllers
             return Ok(subscription);
         }
 
+        [HttpGet("GetSubscriptionByUserProfileId")]
+        public IActionResult GetSubscriptionByUserProfileId(int Id)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                DBLogic logic = new DBLogic(_context);
+                List<Subscription> records = logic.GetSubscriptionByUserProfileId(Id).ToList();
+
+                if (records == null || !records.Any())
+                {
+                    return NotFound();
+                }
+
+                return Ok(records);
+            }
+            catch (Exception err)
+            {
+                // throw err;
+                return StatusCode(500, "Internal server error. Please try again later.");
+
+            }
+        }
+
     }
 }
