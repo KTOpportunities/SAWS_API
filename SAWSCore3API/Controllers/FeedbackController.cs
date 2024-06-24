@@ -27,8 +27,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]    
+    [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class FeedbackController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -67,6 +69,7 @@ namespace SAWSCore3API.Controllers
         [HttpGet]
         [Route("GetPagedAllFeedbacks")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         
         public IActionResult GetPagedAllFeedbacks([FromQuery] PaginationFilter filter)
         {
@@ -104,7 +107,8 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetPagedAllFeedbacksByUniqueEmail")]
-        [AllowAnonymous]        
+        [AllowAnonymous]     
+        [MapToApiVersion("1")]   
         public IActionResult GetPagedAllFeedbacksByUniqueEmail([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -155,7 +159,8 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetPagedAllBroadcasts")]
-        [AllowAnonymous]        
+        [AllowAnonymous]
+        [MapToApiVersion("1")]
         public IActionResult GetPagedAllBroadcasts([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -206,6 +211,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost("PostInsertNewFeedback")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public ActionResult<string> PostInsertNewFeedback( Feedback feedback)
         {
 
@@ -241,6 +247,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost("PostInsertBroadcastMessages")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public ActionResult<string> PostInsertBroadcastMessages(List<Feedback> feedbackList)
         {
             if (!ModelState.IsValid)
@@ -283,6 +290,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpDelete("DeleteFeedbackById")]
+        [MapToApiVersion("1")]
         public ActionResult<string> DeleteFeedbackById(int id)
         {
 
@@ -309,6 +317,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpDelete("DeleteBroadcastByBatchId")]
+        [MapToApiVersion("1")]
         public ActionResult<string> DeleteBroadcastByBatchId(string batchId)
         {
 
@@ -336,6 +345,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetFeedbackById")]
+        [MapToApiVersion("1")]
         public IActionResult GetFeedbackById(int id)
         {
             if (!ModelState.IsValid)
@@ -363,6 +373,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetBroadcastMessages")]
+        [MapToApiVersion("1")]
         public IActionResult GetBroadcastMessages()
         {
             DBLogic logic = new DBLogic(_context);
@@ -386,6 +397,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetFeedbackMessagesBySenderId")]
+        [MapToApiVersion("1")]
         public IActionResult GetFeedbackMessagesBySenderId(string id)
         {
             if (!ModelState.IsValid)

@@ -27,8 +27,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class SubscriptionController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -65,6 +67,7 @@ namespace SAWSCore3API.Controllers
         
         [HttpPost("PostInsertSubscription")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public ActionResult<string> PostInsertSubscription( Subscription subscription)
         {
 
@@ -99,6 +102,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpDelete("DeleteSubscriptionById")]
+        [MapToApiVersion("1")]
         public ActionResult<string> DeleteSubscriptionById(int id)
         {
 
@@ -126,6 +130,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetSubscriptionById")]
+        [MapToApiVersion("1")]
         public IActionResult GetSubscriptionById(int id)
         {
             if (!ModelState.IsValid)
@@ -141,6 +146,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetSubscriptionByUserProfileId")]
+        [MapToApiVersion("1")]
         public IActionResult GetSubscriptionByUserProfileId(int Id)
         {
 

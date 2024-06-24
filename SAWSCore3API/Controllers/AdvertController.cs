@@ -27,8 +27,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class AdvertController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -66,6 +68,7 @@ namespace SAWSCore3API.Controllers
         [HttpGet]
         [Route("GetPagedAllAdverts")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         
         public IActionResult GetPagedAllAdverts([FromQuery] PaginationFilter filter)
         {
@@ -102,6 +105,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost("PostInsertNewAdvert")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public ActionResult<string> PostInsertNewFeedback( Advert advert)
         {
 
@@ -136,6 +140,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetAllAdverts")]
+        [MapToApiVersion("1")]
         public IActionResult GetAllAdverts()
         {
             DBLogic logic = new DBLogic(_context);
@@ -165,6 +170,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetAdvertByAdvertId")]
+        [MapToApiVersion("1")]
         public IActionResult GetAdvertByAdvertId(int id)
         {
 
@@ -201,6 +207,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpDelete("DeleteAdvertById")]
+        [MapToApiVersion("1")]
         public ActionResult<string> DeleteAdvertById(int id)
         {
 

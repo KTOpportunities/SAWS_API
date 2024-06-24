@@ -18,8 +18,10 @@ using FluentFTP.Rules;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     //[Authorize]
     public class RawSourceController : ControllerBase
     {
@@ -43,6 +45,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetSourceTextFolderFiles")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetSourceTextFolderFiles(string textfoldername, int lasthours = LASTHOURS)
         {
             //get credentials from _config
@@ -110,6 +113,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpGet("GetSourceChartFolderFilesList")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetSourceChartFolderFilesList(string imagefoldername, int lasthours = LASTHOURS)
         {
             //get credentials from _config
@@ -178,6 +182,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpGet("GetChartsFile")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetChartsFile(string imagefoldername, string imagefilename)
         {
             //get credentials from _config
@@ -268,6 +273,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetSourceAviationFolderFilesList")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetSourceAviationFolderFilesList(string imagefoldername, int lasthours = LASTHOURS)
         {
             //get credentials from _config
@@ -336,6 +342,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpGet("GetAviationFile")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetAviationFile(string imagefoldername, string imagefilename)
         {
             //get credentials from _config
@@ -427,6 +434,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpGet("SyncFTPFolders")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> SyncFTPFolders()
         {
             //get credentials from _config
@@ -471,6 +479,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("DownloadAllAsync")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> DownloadAllAsync()
         {
             string ftpHost, username, password, rootFolder, fptmirrorfolder = "";
@@ -498,6 +507,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("DownloadAll")]
+        [MapToApiVersion("1")]
         public ActionResult DownloadAll()
         {
             string ftpHost, username, password, rootFolder, fptmirrorfolder = "";
@@ -551,6 +561,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpGet("GetLocalTextFolderFiles")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetLocalTextFolderFiles(string textfoldername)
         {
             //get credentials from _config

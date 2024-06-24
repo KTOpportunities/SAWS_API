@@ -26,9 +26,11 @@ using SAWSCore3API.Logic;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
-    [EnableCors("DefaultCorsPolicy")]
     [ApiController]
+    [EnableCors("DefaultCorsPolicy")]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class AuthenticateController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -60,6 +62,7 @@ namespace SAWSCore3API.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> Login(LoginModel appUser)
         {
             ApplicationUser user = null;
@@ -148,6 +151,7 @@ namespace SAWSCore3API.Controllers
 
         [AllowAnonymous]
         [HttpPost("Register")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> Register(RegisterModel appUser)
         {
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -195,6 +199,7 @@ namespace SAWSCore3API.Controllers
 
         [AllowAnonymous]
         [HttpPost("RegisterSubscriber")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> RegisterSubscriber(RegisterSubscriberModel appUser)
         {
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
@@ -273,6 +278,7 @@ namespace SAWSCore3API.Controllers
         [Authorize]
         //[AllowAnonymous]
         [HttpPost("InsertUpdateUserProfile")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> InsertUpdateUserProfile(UserProfile userProfile)
         {
             if (!ModelState.IsValid)
@@ -332,6 +338,7 @@ namespace SAWSCore3API.Controllers
 
         [Authorize]
         [HttpDelete("DeleteUserProfileById")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> DeleteUserProfileById(int id, string aspuid)
         {
             if (!ModelState.IsValid)
@@ -385,6 +392,7 @@ namespace SAWSCore3API.Controllers
 
         [AllowAnonymous]
         [HttpPost("Logout")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> LogOut(string username, string password)
         {
             try
@@ -403,6 +411,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetAllUserLogins")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetAllUserLogins()
         {
 
@@ -420,6 +429,7 @@ namespace SAWSCore3API.Controllers
 
         [Authorize]
         [HttpGet("GetLoggedInUser")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> GetLoggedInUser(string Id)
         {
 
@@ -447,6 +457,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpPost("RequestPasswordReset")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> RequestPasswordReset(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -500,6 +511,7 @@ namespace SAWSCore3API.Controllers
 
 
         [HttpPost("ResetPassword")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> ResetPassword([FromBody] IDResetPassword iDResetPassword)
         {
             var user = await userManager.FindByNameAsync(iDResetPassword.email);
@@ -540,6 +552,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("LoginEmailExist")]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> LoginEmailExist(string email)
         {
             var user = await userManager.FindByEmailAsync(email);

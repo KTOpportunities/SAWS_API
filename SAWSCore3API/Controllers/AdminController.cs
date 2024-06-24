@@ -25,8 +25,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class AdminController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -59,6 +61,7 @@ namespace SAWSCore3API.Controllers
         [HttpGet]
         [Route("GetPagedAllAdmins")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         
         public IActionResult GetPagedAllAdmins([FromQuery] PaginationFilter filter)
         {

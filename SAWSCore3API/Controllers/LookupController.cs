@@ -27,8 +27,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class LookupController : ControllerBase
     {
          private readonly UserManager<ApplicationUser> userManager;
@@ -63,6 +65,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetAllPackages")]
+        [MapToApiVersion("1")]
         public IActionResult GetAllPackages()
         {
             DBLogic logic = new DBLogic(_context);
@@ -87,6 +90,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetServicesByPackageId")]
+        [MapToApiVersion("1")]
         public IActionResult GetServicesByPackageId(int id)
         {
             DBLogic logic = new DBLogic(_context);
@@ -111,6 +115,7 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpGet("GetServiceProductsByServiceId")]
+        [MapToApiVersion("1")]
         public IActionResult GetServiceProductsByServiceId(int id)
         {
             DBLogic logic = new DBLogic(_context);

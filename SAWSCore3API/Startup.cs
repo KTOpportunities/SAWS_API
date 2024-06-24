@@ -231,9 +231,9 @@ namespace MySqlCore3API
                 app.UseSwaggerUI(options =>
                 {
                     //options.SwaggerEndpoint("./v1/swagger.json", "Jcred API v1");
-                    options.DocumentTitle = "API Documentation";
-                    options.SwaggerEndpoint($"/swagger/v1/swagger.json", $"Jcred API v1");
-                    options.SwaggerEndpoint($"/swagger/v2/swagger.json", $"Jcred API v2");
+                    options.DocumentTitle = "SAWS API Documentation";
+                    options.SwaggerEndpoint($"/swagger/v1/swagger.json", $"SAWS API v1");
+                    options.SwaggerEndpoint($"/swagger/v2/swagger.json", $"SAWS API v2");
                 });
             }
 

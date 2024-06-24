@@ -27,8 +27,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class FileManagerController : ControllerBase
     {
         private IWebHostEnvironment Environment;
@@ -45,6 +47,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost]
         [Route("PostDocsForAdvert")]
+        [MapToApiVersion("1")]
         public IActionResult PostDocsForAdvert([FromForm] IList<DocAdvert> files)
         {
 
@@ -126,6 +129,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpGet]
         [Route("GetDocAdvertFileById")]
+        [MapToApiVersion("1")]
         public IActionResult GetDocAdvertFileById(int id)
         {
 
@@ -158,6 +162,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpDelete]
         [Route("DeleteDocAdvertById")]
+        [MapToApiVersion("1")]
         public ActionResult<string> DeleteDocAdvertById(int Id)
         {
 
@@ -188,6 +193,7 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost]
         [Route("PostDocsForFeedback")]
+        [MapToApiVersion("1")]
         public IActionResult PostDocsForFeedback([FromForm] IList<DocFeedback> files)
         {
 

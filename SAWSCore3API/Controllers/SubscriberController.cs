@@ -36,8 +36,10 @@ using Org.BouncyCastle.Asn1.Crmf;
 
 namespace SAWSCore3API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     public class SubscriberController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -77,6 +79,7 @@ namespace SAWSCore3API.Controllers
         [HttpGet]
         [Route("GetPagedAllSubscribers")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public IActionResult GetPagedAllUsers([FromQuery] PaginationFilter filter)
         {
             DBLogic logic = new DBLogic(_context);
@@ -120,6 +123,7 @@ namespace SAWSCore3API.Controllers
         [HttpPost]
         [Route("MakeRecurringPayment")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         //PayFastRequest request
         public async Task<IActionResult> MakeRecurringPayment([FromBody] PaymentModel2 request)
         {
@@ -201,6 +205,7 @@ namespace SAWSCore3API.Controllers
         [HttpPost]
         [Route("CancelSubscription")]
         [AllowAnonymous]
+        [MapToApiVersion("1")]
         public async Task<IActionResult> CancelSubscription([FromBody] CancelSubscriptionRequest request)
         {
             if (!ModelState.IsValid)
