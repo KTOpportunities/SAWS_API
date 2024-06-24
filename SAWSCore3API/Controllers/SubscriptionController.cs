@@ -154,10 +154,12 @@ namespace SAWSCore3API.Controllers
                 DBLogic logic = new DBLogic(_context);
                 List<Subscription> records = logic.GetSubscriptionByUserProfileId(Id).ToList();
 
+               /*    
                 if (records == null || !records.Any())
                 {
                     return NotFound();
                 }
+               */
 
                 return Ok(records);
             }
