@@ -639,6 +639,24 @@ namespace SAWSCore3API.Logic
             return (subscription);
         }
 
+        public Subscription GetActiveSubscriptionByUserProfileId(int Id)
+        {
+            Subscription subscription = new Subscription();
+
+            try
+            {
+                subscription = _context.Subscriptions
+                .Where(d => d.userprofileid == Id && d.isdeleted == false && d.subscription_status == "Active")
+                .FirstOrDefault();
+            }
+            catch (Exception err)
+            {
+
+            }
+
+            return (subscription);
+        }
+
         public List<Subscription> GetSubscriptionByUserProfileId(int Id)
         {
             List<Subscription> toReturn = new List<Subscription>();
@@ -785,6 +803,6 @@ namespace SAWSCore3API.Logic
         }
 
 
-
+        
     }
 }

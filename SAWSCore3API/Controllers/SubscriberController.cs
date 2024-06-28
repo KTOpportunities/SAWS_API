@@ -52,9 +52,6 @@ namespace SAWSCore3API.Controllers
 
         private readonly PayFastSettings payFastSettings;
 
-
-
-
         public SubscriberController(UserManager<ApplicationUser> userManager,
                                       RoleManager<IdentityRole> roleManager,
                                       IConfiguration configuration,
@@ -142,7 +139,10 @@ namespace SAWSCore3API.Controllers
                 recurringRequest.merchant_key = _configuration.GetValue<string>("payFast:merchant_key");
                 recurringRequest.return_url = request.returnUrl;
                 recurringRequest.cancel_url = request.CancelUrl;
-                recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
+                recurringRequest.notify_url = request.NotifyUrl;
+                recurringRequest.custom_int1 = request.userId;
+
+                // recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
 
                 // Buyer Details
                 recurringRequest.email_address = request.email_address;
@@ -272,6 +272,178 @@ namespace SAWSCore3API.Controllers
                 return BadRequest(new Response { Status = "Error", Message = err.Message });
             }
         }
+
+
+        [HttpPost]
+        [Route("Notify")]
+        [AllowAnonymous]
+        [MapToApiVersion("1")]
+        public async Task<IActionResult> Notify([ModelBinder(BinderType = typeof(PayFastNotifyModelBinder))] PayFastNotify payFastNotifyViewModel)
+        {
+
+            payFastNotifyViewModel.SetPassPhrase(this.payFastSettings.PassPhrase);
+
+            var calculatedSignature = payFastNotifyViewModel.GetCalculatedSignature();
+            var isValidSignature = payFastNotifyViewModel.signature == calculatedSignature;
+            this._logger.LogInformation($"Signature Validation Result: {isValidSignature}");
+
+            // Validate IP Address
+            var validIp = await ValidatePayFastIpAddress(this.HttpContext.Connection.RemoteIpAddress.ToString());
+            this._logger.LogInformation($"IP Address Validation Result: {validIp}");
+
+            // Validate Payment Data
+            var cartTotal = 200.00; // Replace with actual cart total
+            var validPaymentData = ValidatePaymentData(cartTotal, payFastNotifyViewModel.amount_gross);
+            this._logger.LogInformation($"Payment Data Validation Result: {validPaymentData}");
+
+            // Validate Server Confirmation
+            // var payfastHost = this.payFastSettings.UseSandbox ? "sandbox.payfast.co.za" : "www.payfast.co.za";
+            var payfastHost = "sandbox.payfast.co.za";
+            var pfParamString = GetParamString(payFastNotifyViewModel);
+            var validServerConfirmation = await ValidateServerConfirmation(payfastHost, pfParamString);
+            this._logger.LogInformation($"Server Confirmation Validation Result: {validServerConfirmation}");
+
+            // if (isValidSignature && validIp && validPaymentData && validServerConfirmation)
+            // if (validIp)
+            // {
+            //     // All checks have passed, the payment is successful
+            //     return Ok("Payment successful");
+            // }
+            // else
+            // {
+            //     // Some checks have failed, check payment manually and log for investigation
+            //     return BadRequest("Payment validation failed");
+            // }
+
+            DBLogic logic = new DBLogic(_context);
+
+
+            if (payFastNotifyViewModel.payment_status == "COMPLETE")
+            {
+                var subscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
+
+                if (subscription != null)
+                {
+                    subscription.subscription_token = payFastNotifyViewModel.token;
+
+                    var DBResponse = logic.PostInsertSubcription(subscription);
+
+                    var message = "";
+
+                    if (DBResponse == "Success")
+                    {
+                        message = "Successfully updated subscription";
+                    }
+                    else
+                    {
+                        message = "Failed to add subscription";
+                    }
+
+                    return Ok(message);
+
+                }
+                else
+                {
+                    return Ok("Did not update subscription");
+                }
+
+            }
+
+            // return Ok("Payment successful");
+            return BadRequest("Payment validation failed");
+        }
+
+        private bool ValidatePaymentData(double cartTotal, string amount_gross)
+        {
+            // Validate that the cart total is approximately equal to the amount_gross received
+            return Math.Abs(cartTotal - Convert.ToDouble(amount_gross)) <= 0.01;
+        }
+
+        private string GetParamString(PayFastNotify payFastNotifyViewModel)
+        {
+            var properties = payFastNotifyViewModel.GetType().GetProperties();
+            var paramString = new StringBuilder();
+            foreach (var prop in properties)
+            {
+                var value = prop.GetValue(payFastNotifyViewModel)?.ToString();
+                if (value != null && prop.Name != "signature")
+                {
+                    paramString.Append($"{prop.Name}={WebUtility.UrlEncode(value)}&");
+                }
+            }
+            return paramString.ToString().TrimEnd('&');
+        }
+
+        private async Task<bool> ValidateServerConfirmation(string pfHost, string pfParamString)
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.PostAsync($"https://{pfHost}/eng/query/validate", new StringContent(pfParamString, Encoding.UTF8, "application/x-www-form-urlencoded"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+                return responseContent == "VALID";
+            }
+        }
+
+        private async Task<bool> ValidatePayFastIpAddress(string ipAddress)
+        {
+            var validHosts = new[] { "www.payfast.co.za", "sandbox.payfast.co.za", "w1w.payfast.co.za", "w2w.payfast.co.za" };
+            var validIps = new HashSet<string>();
+
+            foreach (var host in validHosts)
+            {
+                var ipAddresses = await Dns.GetHostAddressesAsync(host);
+                foreach (var ip in ipAddresses)
+                {
+                    validIps.Add(ip.ToString());
+                }
+            }
+
+            return validIps.Contains(ipAddress);
+        }
+
+
+
+        // [HttpPost]
+        // [Route("Notify")]
+        // [AllowAnonymous]
+        // [MapToApiVersion("1")]
+        // public async Task<IActionResult> Notify([ModelBinder(BinderType = typeof(PayFastNotifyModelBinder))]PayFastNotify payFastNotifyViewModel)
+        // {
+        //     payFastNotifyViewModel.SetPassPhrase(this.payFastSettings.PassPhrase);
+
+        //     var calculatedSignature = payFastNotifyViewModel.GetCalculatedSignature();
+
+        //     var isValid = payFastNotifyViewModel.signature == calculatedSignature;
+
+        //     this._logger.LogInformation($"Signature Validation Result: {isValid}");
+
+        //     // The PayFast Validator is still under developement
+        //     // Its not recommended to rely on this for production use cases
+        //     var payfastValidator = new PayFastValidator(this.payFastSettings, payFastNotifyViewModel, this.HttpContext.Connection.RemoteIpAddress);
+
+        //     var merchantIdValidationResult = payfastValidator.ValidateMerchantId();
+
+        //     this._logger.LogInformation($"Merchant Id Validation Result: {merchantIdValidationResult}");
+
+        //     var ipAddressValidationResult = await payfastValidator.ValidateSourceIp();
+
+        //     this._logger.LogInformation($"Ip Address Validation Result: {ipAddressValidationResult}");
+
+        //     // Currently seems that the data validation only works for success
+        //     if (payFastNotifyViewModel.payment_status == PayFastStatics.CompletePaymentConfirmation)
+        //     {
+        //         var dataValidationResult = await payfastValidator.ValidateData();
+
+        //         this._logger.LogInformation($"Data Validation Result: {dataValidationResult}");
+        //     }
+
+        //     if (payFastNotifyViewModel.payment_status == PayFastStatics.CancelledPaymentConfirmation)
+        //     {
+        //         this._logger.LogInformation($"Subscription was cancelled");
+        //     }
+
+        //     return Ok();
+        // }
 
 
 

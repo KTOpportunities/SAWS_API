@@ -52,6 +52,7 @@ namespace SAWSCore3API.Models
     public class PaymentModel2
     {
         public string returnUrl { get; set; }
+        public int userId { get; set; }
         public string CancelUrl { get; set; }
         public string NotifyUrl { get; set; }
         public string name_first { get; set; }
