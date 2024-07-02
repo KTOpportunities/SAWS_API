@@ -150,8 +150,6 @@ namespace SAWSCore3API.Controllers
                     "July", "August", "September", "October", "November", "December"
             };
 
-            DBLogic logic = new DBLogic(_context);
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
@@ -181,6 +179,44 @@ namespace SAWSCore3API.Controllers
                 }).ToList();
 
                 return Ok(result);
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
+        }
+
+        [HttpGet("GetSubscripionsPerPackageType")]
+        [MapToApiVersion("1")]
+        public IActionResult GetSubscripionsPerPackageType()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var userSubscriptonsCounts = _context.Subscriptions
+               .Where(u => u.isdeleted == false && u.subscription_status == "Active")
+               .GroupBy(u => new { u.package_name })
+               .Select(g => new
+               {
+                   g.Key.package_name,
+                   Count = g.Count()
+               })
+               .ToList();
+
+                var totalCount = userSubscriptonsCounts.Sum(usc => usc.Count);
+
+                var response = new
+                {
+                    UserSubscriptionCounts = userSubscriptonsCounts,
+                    TotalCount = totalCount
+                };
+
+                return Ok(response);
             }
             catch (Exception err)
             {
