@@ -689,7 +689,7 @@ namespace SAWSCore3API.Logic
             }
             return toReturn.ToList();
         }
-
+        
         public List<Service> GetServicesByPackageId(int id)
         {
             List<Service> toReturn = new List<Service>();
@@ -803,6 +803,6 @@ namespace SAWSCore3API.Logic
         }
 
 
-        
+
     }
 }

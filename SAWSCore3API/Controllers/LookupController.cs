@@ -33,7 +33,7 @@ namespace SAWSCore3API.Controllers
     [ApiVersion("1")]
     public class LookupController : ControllerBase
     {
-         private readonly UserManager<ApplicationUser> userManager;
+        private readonly UserManager<ApplicationUser> userManager;
         private IWebHostEnvironment Environment;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
@@ -131,6 +131,56 @@ namespace SAWSCore3API.Controllers
                 records = logic.GetServiceProductsByServiceId(id).ToList();
 
                 return Ok(records);
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
+        }
+
+        [HttpGet("GetRegistrationsPerUserType")]
+        [MapToApiVersion("1")]
+        public IActionResult GetRegistrationsPerUserType()
+        {
+            var startDate = DateTime.Now.AddMonths(-12);
+            var monthNames = new[]
+            {
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+            };
+
+            DBLogic logic = new DBLogic(_context);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var records = _context.userProfiles
+               .Where(u => u.created_at >= startDate && u.isdeleted == false && u.userrole == "Subscriber")
+               .GroupBy(u => new { u.userrole, Month = u.created_at.Value.Month, Year = u.created_at.Value.Year })
+               .Select(g => new
+               {
+                   g.Key.userrole,
+                   g.Key.Month,
+                   g.Key.Year,
+                   Count = g.Count()
+               })
+               .ToList();
+
+                var result = records.Select(r => new
+                {
+                    UserRole = r.userrole,
+                    Month = r.Month,
+                    MonthString = monthNames[r.Month - 1],
+                    Year = r.Year,
+                    Count = r.Count
+                }).ToList();
+
+                return Ok(result);
             }
             catch (Exception err)
             {
