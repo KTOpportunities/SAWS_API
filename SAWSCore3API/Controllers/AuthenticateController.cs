@@ -71,7 +71,7 @@ namespace SAWSCore3API.Controllers
                     .Where(user => (user.UserName == appUser.Username || user.Email == appUser.Username) && user.IsActive == true)
                     .SingleOrDefault();
 
-            
+
             ObjectResult statusCode = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
 
             if (user != null)
@@ -120,14 +120,22 @@ namespace SAWSCore3API.Controllers
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token)
-                        ,expiration = token.ValidTo
-                        ,aspUserID  = user.Id.ToString()
-                        ,fullname = userProfile != null ? userProfile.fullname : ""
-                        ,aspUserName = user.UserName
-                        ,aspUserEmail = user.Email
-                        ,rolesList  = rolesList
-                        ,userprofileid = userProfile != null ? userProfile.userprofileid : 0
-                        ,userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
+                        ,
+                        expiration = token.ValidTo
+                        ,
+                        aspUserID = user.Id.ToString()
+                        ,
+                        fullname = userProfile != null ? userProfile.fullname : ""
+                        ,
+                        aspUserName = user.UserName
+                        ,
+                        aspUserEmail = user.Email
+                        ,
+                        rolesList = rolesList
+                        ,
+                        userprofileid = userProfile != null ? userProfile.userprofileid : 0
+                        ,
+                        userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
                 }
@@ -137,7 +145,8 @@ namespace SAWSCore3API.Controllers
                     //statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "401", Message = "Please check your password and username" });
                 }
             }
-            else if(user == null) {
+            else if (user == null)
+            {
 
                 statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "401", Message = "Please check your password and username" });
             }
@@ -164,7 +173,7 @@ namespace SAWSCore3API.Controllers
                     UserName = appUser.Username,
                     Email = appUser.Email,
                     IsActive = true,
-                    
+
                 };
 
                 var result = await userManager.CreateAsync(user, appUser.Password);
@@ -177,7 +186,7 @@ namespace SAWSCore3API.Controllers
 
                 if (result.Succeeded)
                 {
-                    
+
                     await userManager.AddToRoleAsync(user, appUser.UserRole);
 
                     statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
@@ -221,6 +230,7 @@ namespace SAWSCore3API.Controllers
                     };
 
                     var result = await userManager.CreateAsync(user, appUser.Password);
+                    var resultSubscription = "";
 
                     if (!await roleManager.RoleExistsAsync("Admin"))
                         await roleManager.CreateAsync(new IdentityRole("Admin"));
@@ -233,27 +243,42 @@ namespace SAWSCore3API.Controllers
 
                         await userManager.AddToRoleAsync(user, appUser.UserRole);
 
-                        statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
-
-
-
-                        //create 
+                        UserProfile userProfile = new UserProfile();
+                        Subscription freeSubscription = new Subscription();
+                        DBLogic logic = new DBLogic(_context);
+                        //create
                         try
                         {
-                            UserProfile userProfile = new UserProfile();
                             userProfile.userprofileid = 0;
                             userProfile.fullname = appUser.Fullname;
                             userProfile.email = appUser.Email;
                             //userProfile.mobilenumber = appUser.mo
                             userProfile.aspuid = user.Id;
                             userProfile.userrole = appUser.UserRole;
-                            DBLogic logic = new DBLogic(_context);
-                            logic.InsertUpdateUserProfile(userProfile);
+
+                            userProfile = logic.InsertUpdateUserProfile(userProfile);
+
+                           
                         }
                         catch (Exception err)
                         {
-                            //error creating user profile, but login was successfull
+                            //error creating user profile, but login was successful
                         }
+
+                        freeSubscription.userprofileid = userProfile.userprofileid;
+                        freeSubscription.isdeleted = false;
+                        freeSubscription.package_name = "monthly Free";
+                        freeSubscription.package_id = 1;
+                        freeSubscription.package_price = 0;
+                        freeSubscription.start_date = DateTime.Now;
+                        freeSubscription.end_date = DateTime.Now.AddYears(1);
+                        freeSubscription.subscription_duration = 365;
+                        freeSubscription.subscription_token = "";
+                        freeSubscription.subscription_status = "Active";
+                        resultSubscription = logic.PostInsertSubcription(freeSubscription);
+
+                        // return Ok(userProfile);
+                         statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
                     }
 
                     if (!result.Succeeded)
@@ -269,7 +294,7 @@ namespace SAWSCore3API.Controllers
             }
             else
             {
-                   statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "Error", Message = "User Exists" });
+                statusCode = StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "Error", Message = "User Exists" });
             }
 
             return statusCode;
@@ -293,7 +318,8 @@ namespace SAWSCore3API.Controllers
                 logic.InsertUpdateUserProfile(userProfile);
 
                 //update identity email
-                try {
+                try
+                {
                     var aspIdentityId = userProfile.aspuid;
 
                     if (!String.IsNullOrEmpty(aspIdentityId))
@@ -306,21 +332,20 @@ namespace SAWSCore3API.Controllers
 
                             var result = await userManager.UpdateAsync(user);
 
-
                             if (result.Succeeded)
                             {
                                 //return RedirectToAction("Account");
                             }
                             else
                             {
-                               
+
                             }
 
                         }
                     }
                 }
                 catch (Exception err)
-                { 
+                {
 
                 }
 
@@ -328,8 +353,8 @@ namespace SAWSCore3API.Controllers
 
             }
             catch (Exception err)
-            { 
-            
+            {
+
             }
 
             return BadRequest();
@@ -351,8 +376,9 @@ namespace SAWSCore3API.Controllers
                 DBLogic logic = new DBLogic(_context);
                 logic.DeleteUserProfileById(id);
 
-                 //update identity isActive
-                try {               
+                //update identity isActive
+                try
+                {
 
                     if (!String.IsNullOrEmpty(aspuid))
                     {
@@ -369,14 +395,14 @@ namespace SAWSCore3API.Controllers
                             }
                             else
                             {
-                               
+
                             }
 
                         }
                     }
                 }
                 catch (Exception err)
-                { 
+                {
 
                 }
 
@@ -420,9 +446,9 @@ namespace SAWSCore3API.Controllers
 
             if (users != null)
             {
-            return Ok(users);
-            }            
-            
+                return Ok(users);
+            }
+
             return Unauthorized(new { response = "Invalid users" });
 
         }
@@ -442,12 +468,12 @@ namespace SAWSCore3API.Controllers
                 string rolesList = string.Join(",", roles.ToArray());
 
                 return Ok(new
-                    {
-                        userID  = user.Id.ToString(),
-                        userName = user.UserName,
-                        userEmail = user.Email,
-                        userRole  = rolesList
-                    });
+                {
+                    userID = user.Id.ToString(),
+                    userName = user.UserName,
+                    userEmail = user.Email,
+                    userRole = rolesList
+                });
             }
             else
             {

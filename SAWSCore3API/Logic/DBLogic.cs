@@ -36,7 +36,7 @@ namespace SAWSCore3API.Logic
             _configuration = configuration;
         }
 
-        public void InsertUpdateUserProfile(UserProfile user)
+        public UserProfile InsertUpdateUserProfile(UserProfile user)
         {
             user.updated_at = DateTime.Now;
             user.isdeleted = false;
@@ -47,11 +47,6 @@ namespace SAWSCore3API.Logic
                 {
                     if (insertMode)
                     {
-                        //check if user status is set
-                        //if (user.userstatusid >0 )
-                        //{
-                        //    user.userstatusid_moddatetime = DateTime.Now;
-                        //}
                         user.created_at = DateTime.Now;
 
                         _context.userProfiles.Add(user);
@@ -73,16 +68,13 @@ namespace SAWSCore3API.Logic
                     _context.SaveChanges();
                 }
 
-
-
             }
             catch (Exception err)
             {
                 string errMessage = err.Message;
-                // Write to log
-
-                //throw;
             }
+
+            return (user);
         }
 
         public void DeleteUserProfileById(int id)
@@ -598,6 +590,38 @@ namespace SAWSCore3API.Logic
                 message = "Success";
             }
 
+            return message;
+        }
+
+        public string PostInsertFreeSubcription(Subscription subscription)
+        {
+            var message = "";
+
+                try
+                {
+                    subscription.created_at = DateTime.Now;
+                    subscription.isdeleted = false;
+                    subscription.package_name = "monthly Free";
+                    subscription.package_id = 1;
+                    subscription.package_price = 0;
+                    subscription.start_date = DateTime.Now;
+                    // subscription.end_date = DateTime.Now;
+                    subscription.subscription_duration = 365;
+                    subscription.subscription_token = "";
+                    subscription.subscription_status = "Active";
+                    subscription.isdeleted = false;
+
+                    _context.Subscriptions.Add(subscription);
+                    _context.SaveChanges();
+
+                    message = "Success - Free Subscription";
+                }
+                catch (Exception e)
+                {
+                    message = "Failed - Free Subscription";
+                    throw e;
+                }
+    
             return message;
         }
 
