@@ -139,6 +139,42 @@ namespace SAWSCore3API.Controllers
             return response;
         }
 
+        [HttpPost("PostInsertAdvertClick")]
+        [AllowAnonymous]
+        [MapToApiVersion("1")]
+        public ActionResult<string> PostInsertAdvertClick( AdvertClick advertClick)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.SelectMany(x => x.Value.Errors.Select(y => y.ErrorMessage)).ToList());
+            }
+
+            ObjectResult response = StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "", Message = "" });
+            
+            if (ModelState.IsValid)
+            {
+  
+                DBLogic logic = new DBLogic(_context);
+                    
+                var DBResponse = logic.PostInsertAdvertClick(advertClick);
+
+                if (DBResponse == "Success")
+                { 
+                    response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully added click", DetailDescription = advertClick });
+                }
+                else
+                {
+                    response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Failed to add click" });
+                }   
+            }
+            else
+            {
+                response = StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Failed", Message = "Model State Is Invalid" });
+            }
+            return response;
+        }
+
         [HttpGet("GetAllAdverts")]
         [MapToApiVersion("1")]
         public IActionResult GetAllAdverts()

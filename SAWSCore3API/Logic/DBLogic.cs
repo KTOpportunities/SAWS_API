@@ -405,6 +405,40 @@ namespace SAWSCore3API.Logic
             return message;
         }
 
+        public string PostInsertAdvertClick(AdvertClick advertClick)
+        {
+            var message = "";
+
+            if (advertClick.advertClickId == 0)
+            {
+                try
+                {
+                    advertClick.created_at = DateTime.Now;
+                    advertClick.updated_at = DateTime.Now;
+                    advertClick.isdeleted = false;
+
+                    _context.AdvertClicks.Add(advertClick);
+                    _context.SaveChanges();
+                    message = "Success";
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
+            {
+                advertClick.updated_at = DateTime.Now;
+                advertClick.isdeleted = false;
+
+                _context.AdvertClicks.Update(advertClick);
+                _context.SaveChanges();
+                message = "Success";
+            }
+
+            return message;
+        }
+
         public DocAdvert InsertUpdateDocAdvert(DocAdvert item)
         {
             bool insertMode = item.Id == 0;

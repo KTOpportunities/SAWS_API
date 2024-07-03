@@ -225,6 +225,52 @@ namespace SAWSCore3API.Controllers
             }
         }
 
+        [HttpGet("GetAdvertsClickPerMonth")]
+        [MapToApiVersion("1")]
+        public IActionResult GetAdvertsClickPerMonth()
+        {
+            var startDate = DateTime.Now.AddMonths(-12);
+            var monthNames = new[]
+            {
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+            };
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var records = _context.AdvertClicks
+               .Where(u => u.created_at >= startDate && u.isdeleted == false)
+               .GroupBy(u => new { Month = u.created_at.Value.Month, Year = u.created_at.Value.Year })
+               .Select(g => new
+               {
+                   g.Key.Month,
+                   g.Key.Year,
+                   Count = g.Count()
+               })
+               .ToList();
+
+                var result = records.Select(r => new
+                {
+                    Month = r.Month,
+                    MonthString = monthNames[r.Month - 1],
+                    Year = r.Year,
+                    Count = r.Count
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception err)
+            {
+                string message = err.Message;
+                throw err;
+            }
+        }
+
 
     }
 }
