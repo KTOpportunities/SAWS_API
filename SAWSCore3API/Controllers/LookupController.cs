@@ -187,9 +187,9 @@ namespace SAWSCore3API.Controllers
             }
         }
 
-        [HttpGet("GetSubscripionsPerPackageType")]
+        [HttpGet("GetSubscriptionsPerPackageType")]
         [MapToApiVersion("1")]
-        public IActionResult GetSubscripionsPerPackageType()
+        public IActionResult GetSubscriptionsPerPackageType()
         {
             if (!ModelState.IsValid)
             {
@@ -198,7 +198,7 @@ namespace SAWSCore3API.Controllers
 
             try
             {
-                var userSubscriptonsCounts = _context.Subscriptions
+                var userSubscriptionsCounts = _context.Subscriptions
                .Where(u => u.isdeleted == false && u.subscription_status == "Active")
                .GroupBy(u => new { u.package_name })
                .Select(g => new
@@ -208,11 +208,11 @@ namespace SAWSCore3API.Controllers
                })
                .ToList();
 
-                var totalCount = userSubscriptonsCounts.Sum(usc => usc.Count);
+                var totalCount = userSubscriptionsCounts.Sum(usc => usc.Count);
 
                 var response = new
                 {
-                    UserSubscriptionCounts = userSubscriptonsCounts,
+                    UserSubscriptionCounts = userSubscriptionsCounts,
                     TotalCount = totalCount
                 };
 
