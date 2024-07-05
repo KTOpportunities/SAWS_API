@@ -53,7 +53,7 @@ namespace MySqlCore3API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-           //swagger service
+            //swagger service
             services.AddApiVersioning(config =>
             {
                 config.DefaultApiVersion = new ApiVersion(1, 0);
@@ -264,12 +264,14 @@ namespace MySqlCore3API
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(
-                    Path.Combine(env.ContentRootPath,  @"Uploads")),
-                RequestPath = "/Uploads"
+                    Path.Combine(env.ContentRootPath, @"Uploads")),
+                    // Path.Combine(@"C:\APPS\aviapp_api\Uploads")),
+                // RequestPath = "/Users/manq2/Desktop/KTO/api/SAWS_API/SAWSCore3API/Uploads"
+                RequestPath = "/APPS/aviapp_api/Uploads"
+                // RequestPath = "/Uploads"
             });
-
         }
 
-        
+
     }
 }

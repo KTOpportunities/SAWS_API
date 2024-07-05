@@ -141,6 +141,10 @@ namespace SAWSCore3API.Controllers
                 recurringRequest.cancel_url = request.CancelUrl;
                 recurringRequest.notify_url = request.NotifyUrl;
                 recurringRequest.custom_int1 = request.userId;
+                recurringRequest.custom_int2 = request.package_id;
+                recurringRequest.custom_int3 = request.subscription_amount;
+                recurringRequest.custom_str1 = request.package_name;
+                recurringRequest.custom_str2 = request.subscription_type;
 
                 // recurringRequest.notify_url = this.payFastSettings.NotifyUrl;
 
@@ -274,84 +278,171 @@ namespace SAWSCore3API.Controllers
         }
 
 
+        // [HttpPost]
+        // [Route("Notify")]
+        // [AllowAnonymous]
+        // [MapToApiVersion("1")]
+        // public async Task<IActionResult> Notify([ModelBinder(BinderType = typeof(PayFastNotifyModelBinder))] PayFastNotify payFastNotifyViewModel)
+        // {
+
+        //     payFastNotifyViewModel.SetPassPhrase(this.payFastSettings.PassPhrase);
+
+        //     var calculatedSignature = payFastNotifyViewModel.GetCalculatedSignature();
+        //     var isValidSignature = payFastNotifyViewModel.signature == calculatedSignature;
+        //     this._logger.LogInformation($"Signature Validation Result: {isValidSignature}");
+
+        //     // Validate IP Address
+        //     var validIp = await ValidatePayFastIpAddress(this.HttpContext.Connection.RemoteIpAddress.ToString());
+        //     this._logger.LogInformation($"IP Address Validation Result: {validIp}");
+
+        //     // Validate Payment Data
+        //     var cartTotal = 200.00; // Replace with actual cart total
+        //     var validPaymentData = ValidatePaymentData(cartTotal, payFastNotifyViewModel.amount_gross);
+        //     this._logger.LogInformation($"Payment Data Validation Result: {validPaymentData}");
+
+        //     // Validate Server Confirmation
+        //     // var payfastHost = this.payFastSettings.UseSandbox ? "sandbox.payfast.co.za" : "www.payfast.co.za";
+        //     var payfastHost = "sandbox.payfast.co.za";
+        //     var pfParamString = GetParamString(payFastNotifyViewModel);
+        //     var validServerConfirmation = await ValidateServerConfirmation(payfastHost, pfParamString);
+        //     this._logger.LogInformation($"Server Confirmation Validation Result: {validServerConfirmation}");
+
+        //     // if (isValidSignature && validIp && validPaymentData && validServerConfirmation)
+        //     // if (validIp)
+        //     // {
+        //     //     // All checks have passed, the payment is successful
+        //     //     return Ok("Payment successful");
+        //     // }
+        //     // else
+        //     // {
+        //     //     // Some checks have failed, check payment manually and log for investigation
+        //     //     return BadRequest("Payment validation failed");
+        //     // }
+
+        //     DBLogic logic = new DBLogic(_context);
+
+
+        //     if (payFastNotifyViewModel.payment_status == "COMPLETE")
+        //     {
+        //         var exiting_subscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
+        //         exiting_subscription.subscription_status = "Cancelled";
+
+        //         if (exiting_subscription != null)
+        //         {
+
+        //             var DBResponseCancel = logic.PostInsertSubcription(exiting_subscription);
+
+        //             if (DBResponseCancel == "Success")
+        //             {
+        //                 Subscription subscription = new Subscription();
+
+        //                 subscription.subscriptionId = 0;
+        //                 subscription.userprofileid = int.Parse(payFastNotifyViewModel.custom_int1);
+        //                 subscription.package_name = payFastNotifyViewModel.custom_str1;
+        //                 subscription.package_id = int.Parse(payFastNotifyViewModel.custom_int2);
+        //                 subscription.package_price = int.Parse(payFastNotifyViewModel.custom_int3);
+        //                 subscription.start_date = DateTime.Now;
+        //                 subscription.end_date = DateTime.Now.AddMonths(12);
+        //                 subscription.subscription_duration = 365;
+        //                 subscription.subscription_token = payFastNotifyViewModel.token;
+        //                 subscription.subscription_status = "Active";
+
+        //                 var DBResponse = logic.PostInsertSubcription(subscription);
+
+        //                 var message = "Updating...";
+
+        //                 if (DBResponse == "Success")
+        //                 {
+        //                     message = "Successfully updated subscription";
+        //                 }
+        //                 else
+        //                 {
+        //                     message = "Failed to add subscription";
+        //                 }
+
+        //                 return Ok(message);
+        //             }
+        //             else
+        //             {
+
+        //                 return Ok("Did not cancel subscription");
+        //             }
+        //         }
+        //         else
+        //         {
+        //             return Ok("Did not update subscription");
+        //         }
+
+        //     }
+        //     else
+        //     {
+
+        //         return BadRequest("Payment validation failed");
+        //     }
+
+        // }
+
         [HttpPost]
         [Route("Notify")]
         [AllowAnonymous]
         [MapToApiVersion("1")]
         public async Task<IActionResult> Notify([ModelBinder(BinderType = typeof(PayFastNotifyModelBinder))] PayFastNotify payFastNotifyViewModel)
         {
-
-            payFastNotifyViewModel.SetPassPhrase(this.payFastSettings.PassPhrase);
-
-            var calculatedSignature = payFastNotifyViewModel.GetCalculatedSignature();
-            var isValidSignature = payFastNotifyViewModel.signature == calculatedSignature;
-            this._logger.LogInformation($"Signature Validation Result: {isValidSignature}");
-
-            // Validate IP Address
-            var validIp = await ValidatePayFastIpAddress(this.HttpContext.Connection.RemoteIpAddress.ToString());
-            this._logger.LogInformation($"IP Address Validation Result: {validIp}");
-
-            // Validate Payment Data
-            var cartTotal = 200.00; // Replace with actual cart total
-            var validPaymentData = ValidatePaymentData(cartTotal, payFastNotifyViewModel.amount_gross);
-            this._logger.LogInformation($"Payment Data Validation Result: {validPaymentData}");
-
-            // Validate Server Confirmation
-            // var payfastHost = this.payFastSettings.UseSandbox ? "sandbox.payfast.co.za" : "www.payfast.co.za";
-            var payfastHost = "sandbox.payfast.co.za";
-            var pfParamString = GetParamString(payFastNotifyViewModel);
-            var validServerConfirmation = await ValidateServerConfirmation(payfastHost, pfParamString);
-            this._logger.LogInformation($"Server Confirmation Validation Result: {validServerConfirmation}");
-
-            // if (isValidSignature && validIp && validPaymentData && validServerConfirmation)
-            // if (validIp)
-            // {
-            //     // All checks have passed, the payment is successful
-            //     return Ok("Payment successful");
-            // }
-            // else
-            // {
-            //     // Some checks have failed, check payment manually and log for investigation
-            //     return BadRequest("Payment validation failed");
-            // }
-
             DBLogic logic = new DBLogic(_context);
 
-
-            if (payFastNotifyViewModel.payment_status == "COMPLETE")
+            if (payFastNotifyViewModel.payment_status != "COMPLETE")
             {
-                var subscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
-
-                if (subscription != null)
-                {
-                    subscription.subscription_token = payFastNotifyViewModel.token;
-
-                    var DBResponse = logic.PostInsertSubcription(subscription);
-
-                    var message = "";
-
-                    if (DBResponse == "Success")
-                    {
-                        message = "Successfully updated subscription";
-                    }
-                    else
-                    {
-                        message = "Failed to add subscription";
-                    }
-
-                    return Ok(message);
-
-                }
-                else
-                {
-                    return Ok("Did not update subscription");
-                }
-
+                return BadRequest("Payment validation failed");
             }
 
-            // return Ok("Payment successful");
-            return BadRequest("Payment validation failed");
+            if (!int.TryParse(payFastNotifyViewModel.custom_int1, out int userId) ||
+            !int.TryParse(payFastNotifyViewModel.custom_int2, out int packageId) ||
+            !int.TryParse(payFastNotifyViewModel.custom_int3, out int packagePrice))
+            {
+                return BadRequest("Invalid integer value in custom fields");
+            }
+
+            // Cancel existing subscription
+
+            // var userId = int.Parse(payFastNotifyViewModel.custom_int1);
+            var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
+
+            if (activeSubscription == null)
+            {
+                return Ok("Did not find an active subscription");
+            }
+
+            activeSubscription.subscription_status = "Cancelled";
+            activeSubscription.updated_at = DateTime.Now;
+            var cancelResponse = logic.PostInsertSubcription(activeSubscription);
+
+            if (cancelResponse != "Success")
+            {
+                return Ok("Did not cancel subscription");
+            }
+
+            // Add new subscription 
+
+            var newSubscription = new Subscription
+            {
+                subscriptionId = 0,
+                userprofileid = userId,
+                package_name = payFastNotifyViewModel.custom_str1,
+                package_id = packageId,
+                package_price = packagePrice,
+                start_date = DateTime.Now,
+                end_date = DateTime.Now.AddMonths(12),
+                subscription_duration = 365,
+                subscription_token = payFastNotifyViewModel.token,
+                subscription_status = "Active"
+            };
+
+            var insertResponse = logic.PostInsertSubcription(newSubscription);
+            var message = insertResponse == "Success" ? "Successfully updated subscription" : "Failed to add subscription";
+
+            return Ok(message);
         }
+
 
         private bool ValidatePaymentData(double cartTotal, string amount_gross)
         {

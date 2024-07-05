@@ -363,7 +363,10 @@ namespace SAWSCore3API.Controllers
                 {
                     foreach (var docFeedback in feedbackMessage.DocFeedbacks)
                     {
-                        docFeedback.file_url = $"http://qa.j-cred.co.za/aviationappapi/Uploads/{docFeedback.feedbackMessageId}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
+                        // docFeedback.file_url = $"http://qa.j-cred.co.za/aviationappapi/Uploads/{docFeedback.feedbackMessageId}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
+                        // docFeedback.file_url = $"https://localhost:44379/Users/manq2/Desktop/KTO/api/SAWS_API/SAWSCore3API/Uploads/{docFeedback.feedbackMessageId}/{docFeedback.DocTypeName}/{docFeedback.file_origname}";
+                        docFeedback.file_url = $"http://160.119.253.130/APPS/aviapp_api/Uploads/{docFeedback.DocTypeName}/{docFeedback.feedbackMessageId}/{docFeedback.file_origname}";
+                        // docFeedback.file_url = $" http://staging.j-cred.co.za/Uploads/{docFeedback.DocTypeName}/{docFeedback.feedbackMessageId}/{docFeedback.file_origname}";
                     }
                 }
             }
