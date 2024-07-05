@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
@@ -52,7 +53,6 @@ namespace SAWSCore3API.Models
     public class PaymentModel2
     {
         public string returnUrl { get; set; }
-        public int userId { get; set; }
         public string CancelUrl { get; set; }
         public string NotifyUrl { get; set; }
         public string name_first { get; set; }
@@ -67,6 +67,11 @@ namespace SAWSCore3API.Models
         public double recurring_amount { get; set; }
         public string frequency { get; set; }
 
+        public int userId { get; set; }
+        public int package_id { get; set; }
+        public int subscription_amount { get; set; }
+        public string package_name { get; set; }
+        public string subscription_type { get; set; }
 
     }
 

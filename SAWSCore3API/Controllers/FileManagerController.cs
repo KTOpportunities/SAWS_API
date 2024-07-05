@@ -68,7 +68,8 @@ namespace SAWSCore3API.Controllers
                     var folderId = Convert.ToString(file.advertId);
                     var rootPath = Path.Combine(Environment.ContentRootPath, "Uploads"); ;
                     //Create the Directory.
-                    string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Advert\\");
+                    // string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Advert\\");
+                    string path = Path.Combine(rootPath, rootPath + "\\Advert\\" + folderId + "\\");
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);
@@ -214,7 +215,8 @@ namespace SAWSCore3API.Controllers
                     var folderId = Convert.ToString(file.feedbackMessageId);
                     var rootPath = Path.Combine(Environment.ContentRootPath, "Uploads"); ;
                     //Create the Directory.
-                    string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Feedback\\");
+                    // string path = Path.Combine(rootPath, rootPath + "\\" + folderId + "\\Feedback\\");
+                    string path = Path.Combine(rootPath, rootPath + "\\Feedback\\" + folderId + "\\");
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);

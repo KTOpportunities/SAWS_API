@@ -193,8 +193,9 @@ namespace SAWSCore3API.Controllers
 
                 var toReturn = records.Select(ad => new { advertId = ad.advertId,
                 advert_url = ad.advert_url,
-                 file_url = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + ad.advertId + "/" + ad.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + ad.DocAdverts.FirstOrDefault()?.file_origname }).ToList();
-
+                //  file_url = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + ad.advertId + "/" + ad.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + ad.DocAdverts.FirstOrDefault()?.file_origname }).ToList();
+                 file_url = "http://160.119.253.130/APPS/aviapp_api/Uploads/" + ad.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + ad.advertId + "/" + ad.DocAdverts.FirstOrDefault()?.file_origname }).ToList();
+                //  file_url = " http://staging.j-cred.co.za/Uploads/" + ad.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + ad.advertId + "/" + ad.DocAdverts.FirstOrDefault()?.file_origname }).ToList();
                 return Ok(toReturn);
             }
             catch (Exception err)
@@ -226,7 +227,10 @@ namespace SAWSCore3API.Controllers
 
                 if (advert != null)
                 { 
-                    string fileUrl = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
+                    // string fileUrl = "http://qa.j-cred.co.za/aviationappapi/Uploads/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
+                    // string fileUrl = "https://localhost:44379/Users/manq2/Desktop/KTO/api/SAWS_API/SAWSCore3API/Uploads/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
+                    string fileUrl = "http://160.119.253.130/APPS/aviapp_api/Uploads/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
+                    // string fileUrl = "http://staging.j-cred.co.za/Uploads/" + advert.DocAdverts.FirstOrDefault()?.DocTypeName + "/" + advert.advertId + "/" + advert.DocAdverts.FirstOrDefault()?.file_origname;
                     
                     response = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "Successfully returned advert", DetailDescription = new {
                     Advert = advert,
