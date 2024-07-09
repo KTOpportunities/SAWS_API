@@ -133,7 +133,7 @@ namespace SAWSCore3API.Controllers
                 // this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
 
                 var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
-                var subscritpitonUrl = new subscriptionresponse();
+                var subscriptionUrl = new subscriptionresponse();
 
                 // Merchant Details
                 recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
@@ -192,9 +192,9 @@ namespace SAWSCore3API.Controllers
                 //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
                 var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
 
-                subscritpitonUrl.url = redirectLink.ToString();
+                subscriptionUrl.url = redirectLink.ToString();
 
-                return Ok(subscritpitonUrl);
+                return Ok(subscriptionUrl);
 
             }
             catch (Exception err)
@@ -226,7 +226,7 @@ namespace SAWSCore3API.Controllers
                     return BadRequest(new Response { Status = "Error", Message = "No active subscription" });
                 }
 
-                // Do not cancell on payfast if it's a free subscription
+                // Do not cancel on payfast if it's a free subscription
                 if (activeSubscription.subscriptionId == freeSubscription.subscriptionId)
                 {
                     return Ok(new Response { Status = "Success", Message = "Free subscription active" });
@@ -291,8 +291,9 @@ namespace SAWSCore3API.Controllers
             }
 
             if (!int.TryParse(payFastNotifyViewModel.custom_int1, out int userId) ||
-            !int.TryParse(payFastNotifyViewModel.custom_int2, out int packageId) ||
-            !int.TryParse(payFastNotifyViewModel.custom_int3, out int packagePrice))
+                !int.TryParse(payFastNotifyViewModel.custom_int2, out int packageId) ||
+                !int.TryParse(payFastNotifyViewModel.custom_int3, out int packagePrice)
+                )
             {
                 return BadRequest("Invalid integer value in custom fields");
             }
@@ -323,7 +324,7 @@ namespace SAWSCore3API.Controllers
 
             if (result.status != "success")
             {
-                return Ok("Did not cancel payfast subscription");
+                 return Ok("Did not cancel payfast subscription");
             }
 
             activeSubscription.updated_at = DateTime.Now;
