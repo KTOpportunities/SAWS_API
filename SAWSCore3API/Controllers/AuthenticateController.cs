@@ -106,10 +106,6 @@ namespace SAWSCore3API.Controllers
                         .Include(up => up.Subscription)
                         .FirstOrDefault(up => up.aspuid == user.Id);
 
-                    var activePackageName = userProfile?.Subscription
-                                            .FirstOrDefault(sub => sub.subscription_status == "Active")
-                                            ?.package_name;
-
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
@@ -120,8 +116,7 @@ namespace SAWSCore3API.Controllers
                         aspUserEmail = user.Email,
                         rolesList = rolesList,
                         userprofileid = userProfile != null ? userProfile.userprofileid : 0,
-                        userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile",
-                        packageName = userProfile != null ? activePackageName : null,
+                        userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
                     });
                 }
                 else
@@ -237,12 +232,10 @@ namespace SAWSCore3API.Controllers
                             userProfile.userprofileid = 0;
                             userProfile.fullname = appUser.Fullname;
                             userProfile.email = appUser.Email;
-                            //userProfile.mobilenumber = appUser.mo
                             userProfile.aspuid = user.Id;
                             userProfile.userrole = appUser.UserRole;
 
                             userProfile = logic.InsertUpdateUserProfile(userProfile);
-
 
                         }
                         catch (Exception err)

@@ -75,11 +75,6 @@ namespace SAWSCore3API.Models
 
     }
 
-    public class CancelSubscriptionRequest
-    {
-        public string subscription_token{ get; set; }
-    }
-
     public class subscriptionresponse
     {
        public string url { get; set; }
