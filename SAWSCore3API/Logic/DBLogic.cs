@@ -631,31 +631,31 @@ namespace SAWSCore3API.Logic
         {
             var message = "";
 
-            try
-            {
-                subscription.created_at = DateTime.Now;
-                subscription.isdeleted = false;
-                subscription.package_name = "monthly Free";
-                subscription.package_id = 1;
-                subscription.package_price = 0;
-                subscription.start_date = DateTime.Now;
-                // subscription.end_date = DateTime.Now;
-                subscription.subscription_duration = 365;
-                subscription.subscription_token = "";
-                subscription.subscription_status = "Active";
-                subscription.isdeleted = false;
+                try
+                {
+                    subscription.created_at = DateTime.Now;
+                    subscription.isdeleted = false;
+                    subscription.package_name = "monthly Free";
+                    subscription.package_id = 1;
+                    subscription.package_price = 0;
+                    subscription.start_date = DateTime.Now;
+                    // subscription.end_date = DateTime.Now;
+                    subscription.subscription_duration = 365;
+                    subscription.subscription_token = "";
+                    subscription.subscription_status = "Active";
+                    subscription.isdeleted = false;
 
-                _context.Subscriptions.Add(subscription);
-                _context.SaveChanges();
+                    _context.Subscriptions.Add(subscription);
+                    _context.SaveChanges();
 
-                message = "Success - Free Subscription";
-            }
-            catch (Exception e)
-            {
-                message = "Failed - Free Subscription";
-                throw e;
-            }
-
+                    message = "Success - Free Subscription";
+                }
+                catch (Exception e)
+                {
+                    message = "Failed - Free Subscription";
+                    throw e;
+                }
+    
             return message;
         }
 
@@ -715,24 +715,6 @@ namespace SAWSCore3API.Logic
             return (subscription);
         }
 
-        public Subscription GetFreeSubscriptionByUserProfileId(int Id)
-        {
-            Subscription subscription = new Subscription();
-
-            try
-            {
-                subscription = _context.Subscriptions
-                .Where(d => d.userprofileid == Id && d.isdeleted == false && d.package_price < 1)
-                .FirstOrDefault();
-            }
-            catch (Exception err)
-            {
-
-            }
-
-            return (subscription);
-        }
-
         public List<Subscription> GetSubscriptionByUserProfileId(int Id)
         {
             List<Subscription> toReturn = new List<Subscription>();
@@ -765,7 +747,7 @@ namespace SAWSCore3API.Logic
             }
             return toReturn.ToList();
         }
-
+        
         public List<Service> GetServicesByPackageId(int id)
         {
             List<Service> toReturn = new List<Service>();
@@ -877,24 +859,6 @@ namespace SAWSCore3API.Logic
                 return sb.ToString();
             }
         }
-
-        public string GenerateSignature(string merchantId, string version, string timestamp, string passphrase)
-        {
-            // Create the string to be hashed
-            string dataToHash = $"merchant-id={merchantId}&timestamp={timestamp}&version={version}&passphrase={passphrase}";
-            // Compute the MD5 hash
-            using (MD5 md5 = MD5.Create())
-            {
-                byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(dataToHash));
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in hashBytes)
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-                return sb.ToString();
-            }
-        }
-
 
 
 
