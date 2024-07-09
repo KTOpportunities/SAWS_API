@@ -208,9 +208,9 @@ namespace SAWSCore3API.Controllers
         }
 
         [HttpPost]
-        [Route("CancelSubscriptionByUserProfileId")]
+        [Route("CancelSubscription")]
         [MapToApiVersion("1")]
-        public async Task<IActionResult> CancelSubscriptionByUserProfileId(int Id)
+        public async Task<IActionResult> CancelSubscription(int subscriptionId, int userprofileId)
         {
 
             DBLogic logic = new DBLogic(_context);
@@ -218,8 +218,8 @@ namespace SAWSCore3API.Controllers
             try
             {
 
-                var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(Id);
-                var freeSubscription = logic.GetFreeSubscriptionByUserProfileId(Id);
+                var activeSubscription = logic.GetSubscriptionById(subscriptionId);
+                var freeSubscription = logic.GetFreeSubscriptionByUserProfileId(userprofileId);
 
                 if (activeSubscription == null)
                 {
@@ -227,7 +227,7 @@ namespace SAWSCore3API.Controllers
                 }
 
                 // Do not cancel on payfast if it's a free subscription
-                if (activeSubscription.subscriptionId == freeSubscription.subscriptionId)
+                if (subscriptionId == freeSubscription.subscriptionId)
                 {
                     return Ok(new Response { Status = "Success", Message = "Free subscription active" });
                 }
