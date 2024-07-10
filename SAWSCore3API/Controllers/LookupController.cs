@@ -204,11 +204,11 @@ namespace SAWSCore3API.Controllers
                .Select(g => new
                {
                    g.Key.package_name,
-                   Count = g.Count()
+                   Users = g.Count()
                })
                .ToList();
 
-                var totalCount = userSubscriptionsCounts.Sum(usc => usc.Count);
+                var totalCount = userSubscriptionsCounts.Sum(usc => usc.Users);
 
                 var response = new
                 {
@@ -250,7 +250,7 @@ namespace SAWSCore3API.Controllers
                {
                    g.Key.Month,
                    g.Key.Year,
-                   Users = g.Count()
+                   Clicks = g.Count()
                })
                .ToList();
 
@@ -259,7 +259,7 @@ namespace SAWSCore3API.Controllers
                     Month = r.Month,
                     MonthString = monthNames[r.Month - 1],
                     Year = r.Year,
-                    Users = r.Users
+                    Clicks = r.Clicks
                 }).ToList();
 
                 return Ok(result);
