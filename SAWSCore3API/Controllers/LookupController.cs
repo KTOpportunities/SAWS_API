@@ -175,7 +175,7 @@ namespace SAWSCore3API.Controllers
                     Month = r.Month,
                     MonthString = monthNames[r.Month - 1],
                     Year = r.Year,
-                    Count = r.Count
+                    Subscriptions = r.Count
                 }).ToList();
 
                 return Ok(result);
@@ -250,7 +250,7 @@ namespace SAWSCore3API.Controllers
                {
                    g.Key.Month,
                    g.Key.Year,
-                   Count = g.Count()
+                   Users = g.Count()
                })
                .ToList();
 
