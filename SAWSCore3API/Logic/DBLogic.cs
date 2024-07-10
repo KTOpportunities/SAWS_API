@@ -750,6 +750,23 @@ namespace SAWSCore3API.Logic
             return toReturn;
         }
 
+        public List<Subscription> GetActiveSubByUserProfileId(int Id)
+        {
+            List<Subscription> toReturn = new List<Subscription>();
+
+            try
+            {
+                toReturn = _context.Subscriptions
+                           .Where(d => d.userprofileid == Id && d.isdeleted == false && d.subscription_status == "Active")
+                           .ToList();
+            }
+            catch (Exception err)
+            {
+                throw;
+            }
+            return toReturn;
+        }
+
 
         public List<Package> GetAllPackages()
         {

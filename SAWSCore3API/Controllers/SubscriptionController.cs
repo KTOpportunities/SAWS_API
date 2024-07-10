@@ -160,7 +160,7 @@ namespace SAWSCore3API.Controllers
                 DBLogic logic = new DBLogic(_context);
                 List<Subscription> records = logic.GetSubscriptionByUserProfileId(Id).ToList();
 
-               /*    
+               /*
                 if (records == null || !records.Any())
                 {
                     return NotFound();
@@ -168,6 +168,38 @@ namespace SAWSCore3API.Controllers
                */
 
                 return Ok(records);
+            }
+            catch (Exception err)
+            {
+                // throw err;
+                return StatusCode(500, "Internal server error. Please try again later.");
+
+            }
+        }
+
+        [HttpGet("GetActiveSubscriptionByUserProfileId")]
+        [MapToApiVersion("1")]
+        public IActionResult GetActiveSubscriptionByUserProfileId(int Id)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                DBLogic logic = new DBLogic(_context);
+                List<Subscription> records = logic.GetActiveSubByUserProfileId(Id).ToList();
+
+                var result = records.Select(s => new
+                {
+                    s.userprofileid,
+                    s.package_name,
+                    s.subscription_status
+                });
+
+                return Ok(result);
             }
             catch (Exception err)
             {
