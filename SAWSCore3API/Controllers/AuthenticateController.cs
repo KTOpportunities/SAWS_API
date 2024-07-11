@@ -119,22 +119,14 @@ namespace SAWSCore3API.Controllers
 
                     return Ok(new
                     {
-                        token = new JwtSecurityTokenHandler().WriteToken(token)
-                        ,
-                        expiration = token.ValidTo
-                        ,
-                        aspUserID = user.Id.ToString()
-                        ,
-                        fullname = userProfile != null ? userProfile.fullname : ""
-                        ,
-                        aspUserName = user.UserName
-                        ,
-                        aspUserEmail = user.Email
-                        ,
-                        rolesList = rolesList
-                        ,
-                        userprofileid = userProfile != null ? userProfile.userprofileid : 0
-                        ,
+                        token = new JwtSecurityTokenHandler().WriteToken(token),
+                        expiration = token.ValidTo,
+                        aspUserID = user.Id.ToString(),
+                        fullname = userProfile != null ? userProfile.fullname : "",
+                        aspUserName = user.UserName,
+                        aspUserEmail = user.Email,
+                        rolesList = rolesList,
+                        userprofileid = userProfile != null ? userProfile.userprofileid : 0,
                         userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
                     });
                     //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
@@ -252,13 +244,11 @@ namespace SAWSCore3API.Controllers
                             userProfile.userprofileid = 0;
                             userProfile.fullname = appUser.Fullname;
                             userProfile.email = appUser.Email;
-                            //userProfile.mobilenumber = appUser.mo
                             userProfile.aspuid = user.Id;
                             userProfile.userrole = appUser.UserRole;
 
                             userProfile = logic.InsertUpdateUserProfile(userProfile);
 
-                           
                         }
                         catch (Exception err)
                         {

@@ -32,6 +32,7 @@ using System.IO;
 using System.Net;
 using Org.BouncyCastle.Asn1.Cmp;
 using Org.BouncyCastle.Asn1.Crmf;
+using System.Net.Http.Headers;
 
 
 namespace SAWSCore3API.Controllers
@@ -49,7 +50,6 @@ namespace SAWSCore3API.Controllers
         private readonly IOptions<SmptSetting> _appSMTPSettings;
         private readonly ILogger<AuthenticateController> _logger;
         private readonly IUriService uriService;
-
         private readonly PayFastSettings payFastSettings;
 
         public SubscriberController(UserManager<ApplicationUser> userManager,
@@ -59,7 +59,8 @@ namespace SAWSCore3API.Controllers
                                       IOptions<SmptSetting> appSMTPSettings,
                                       ILogger<AuthenticateController> logger,
                                       IOptions<PayFastSettings> payFastSettings,
-                                      IUriService uriService)
+                                      IUriService uriService
+                                      )
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
@@ -68,9 +69,7 @@ namespace SAWSCore3API.Controllers
             this._appSMTPSettings = appSMTPSettings;
             _logger = logger;
             this.uriService = uriService;
-
             this.payFastSettings = payFastSettings.Value;
-
         }
 
         [HttpGet]
@@ -131,8 +130,10 @@ namespace SAWSCore3API.Controllers
 
             try
             {
-                var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
-                var subscritpitonUrl = new subscriptionresponse();
+                var passphrase = _configuration.GetValue<string>("payFast:passphrase");
+
+                var recurringRequest = new PayFastRequest(passphrase);
+                var subscriptionUrl = new subscriptionresponse();
 
                 // Merchant Details
                 recurringRequest.merchant_id = _configuration.GetValue<string>("payFast:merchant_id");
@@ -191,9 +192,9 @@ namespace SAWSCore3API.Controllers
                 //var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "/" + signature;
                 var redirectLink = _configuration.GetValue<string>("payFast:endPoint") + "?" + redirectUrl;
 
-                subscritpitonUrl.url = redirectLink.ToString();
+                subscriptionUrl.url = redirectLink.ToString();
 
-                return Ok(subscritpitonUrl);
+                return Ok(subscriptionUrl);
 
             }
             catch (Exception err)
@@ -208,67 +209,66 @@ namespace SAWSCore3API.Controllers
 
         [HttpPost]
         [Route("CancelSubscription")]
-        [AllowAnonymous]
         [MapToApiVersion("1")]
-        public async Task<IActionResult> CancelSubscription([FromBody] CancelSubscriptionRequest request)
+        public async Task<IActionResult> CancelSubscription(int subscriptionId, int userprofileId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
+
+            DBLogic logic = new DBLogic(_context);
 
             try
             {
-                DBLogic logic = new DBLogic(_context);
 
-                using (var httpClient = new HttpClient())
+                var activeSubscription = logic.GetSubscriptionById(subscriptionId);
+                var freeSubscription = logic.GetFreeSubscriptionByUserProfileId(userprofileId);
+
+                if (activeSubscription == null)
                 {
-                    var endPoint = _configuration.GetValue<string>("payFast:endPoint");
-                    var merchantId = _configuration.GetValue<string>("payFast:merchant_id");
-                    var merchantKey = _configuration.GetValue<string>("payFast:merchant_key");
-                    var DateTimeNow = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:sszzz");
-                    var apiVersion = "v1";
+                    return BadRequest(new Response { Status = "Error", Message = "No active subscription" });
+                }
 
-                    // Set up the request URL and headers
-                    // var requestUri = $"{endPoint}/subscriptions/{request.token}/cancel?testing={request.isTesting.ToString().ToLower()}";
-                    httpClient.DefaultRequestHeaders.Add("merchant-id", merchantId);
-                    httpClient.DefaultRequestHeaders.Add("version", apiVersion);
-                    httpClient.DefaultRequestHeaders.Add("timestamp", DateTimeNow);
-                    httpClient.DefaultRequestHeaders.Add("merchant-key", merchantKey); // Ensure this is included
+                // Do not cancel on pay-fast if it's a free subscription
+                if (subscriptionId == freeSubscription.subscriptionId)
+                {
+                    return Ok(new Response { Status = "Success", Message = "Free subscription active" });
+                }
 
-                    var testUrl = $"https://api.payfast.co.za/subscriptions/{request.token}/cancel?testing={request.isTesting.ToString().ToLower()}";
+                activeSubscription.subscription_status = "Cancelled";
+                freeSubscription.subscription_status = "Active";
 
-                    var data = new Dictionary<string, string>
+                this.payFastSettings.MerchantId = _configuration.GetValue<string>("payFast:merchant_id");
+                this.payFastSettings.MerchantKey = _configuration.GetValue<string>("payFast:merchant_key");
+                this.payFastSettings.NotifyUrl = _configuration.GetValue<string>("payFast:NotifyUrl");
+                this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
+                bool istesting = _configuration.GetValue<bool>("payFast:isTesting");
+
+                var subscriptionCancellation = new PayFastSubscription(this.payFastSettings);
+
+                var result = await subscriptionCancellation.Cancel(activeSubscription.subscription_token, istesting);
+
+                if (result.status == "success")
+                {
+
+                    var insertResponseCancel = logic.PostInsertSubcription(activeSubscription);
+                    var insertResponseActivate = logic.PostInsertSubcription(freeSubscription);
+                    var messageCancel = insertResponseCancel == "Success" ? "Successfully cancelled subscription" : "Failed to cancel subscription";
+                    var messageActivate = insertResponseActivate == "Success" ? "Successfully activated free subscription" : "Failed to activate free subscription";
+
+                    return Ok(new
                     {
-                        { "merchant-id", merchantId },
-                        { "version", apiVersion },
-                        { "timestamp", DateTimeNow },
-                        { "merchant-key", merchantKey },
-                        { "token", request.token }
-                    };
+                        Response = result,
+                        CancelMessage = messageCancel,
+                        ActiveMessage = messageActivate,
+                        Status = "Success"
+                    });
+                }
+                else
+                {
 
-                    var signature = logic.GenerateSignature(data);
-
-                    httpClient.DefaultRequestHeaders.Add("signature", signature);
-
-                    // Send the PUT request
-                    var response = await httpClient.PutAsync(testUrl, null);
-
-                    if (response.IsSuccessStatusCode)
+                    return Ok(new
                     {
-                        var successResponse = await response.Content.ReadAsStringAsync();
-                        return Ok(new
-                        {
-                            Response = successResponse,
-                            Headers = httpClient.DefaultRequestHeaders.ToDictionary(h => h.Key, h => string.Join(", ", h.Value)),
-                            signature = signature
-                        });
-                    }
-                    else
-                    {
-                        var errorResponse = await response.Content.ReadAsStringAsync();
-                        return BadRequest(new Response { Status = "Error", Message = errorResponse });
-                    }
+                        Response = result,
+                        Status = "Failed"
+                    });
                 }
             }
             catch (Exception err)
@@ -276,111 +276,6 @@ namespace SAWSCore3API.Controllers
                 return BadRequest(new Response { Status = "Error", Message = err.Message });
             }
         }
-
-
-        // [HttpPost]
-        // [Route("Notify")]
-        // [AllowAnonymous]
-        // [MapToApiVersion("1")]
-        // public async Task<IActionResult> Notify([ModelBinder(BinderType = typeof(PayFastNotifyModelBinder))] PayFastNotify payFastNotifyViewModel)
-        // {
-
-        //     payFastNotifyViewModel.SetPassPhrase(this.payFastSettings.PassPhrase);
-
-        //     var calculatedSignature = payFastNotifyViewModel.GetCalculatedSignature();
-        //     var isValidSignature = payFastNotifyViewModel.signature == calculatedSignature;
-        //     this._logger.LogInformation($"Signature Validation Result: {isValidSignature}");
-
-        //     // Validate IP Address
-        //     var validIp = await ValidatePayFastIpAddress(this.HttpContext.Connection.RemoteIpAddress.ToString());
-        //     this._logger.LogInformation($"IP Address Validation Result: {validIp}");
-
-        //     // Validate Payment Data
-        //     var cartTotal = 200.00; // Replace with actual cart total
-        //     var validPaymentData = ValidatePaymentData(cartTotal, payFastNotifyViewModel.amount_gross);
-        //     this._logger.LogInformation($"Payment Data Validation Result: {validPaymentData}");
-
-        //     // Validate Server Confirmation
-        //     // var payfastHost = this.payFastSettings.UseSandbox ? "sandbox.payfast.co.za" : "www.payfast.co.za";
-        //     var payfastHost = "sandbox.payfast.co.za";
-        //     var pfParamString = GetParamString(payFastNotifyViewModel);
-        //     var validServerConfirmation = await ValidateServerConfirmation(payfastHost, pfParamString);
-        //     this._logger.LogInformation($"Server Confirmation Validation Result: {validServerConfirmation}");
-
-        //     // if (isValidSignature && validIp && validPaymentData && validServerConfirmation)
-        //     // if (validIp)
-        //     // {
-        //     //     // All checks have passed, the payment is successful
-        //     //     return Ok("Payment successful");
-        //     // }
-        //     // else
-        //     // {
-        //     //     // Some checks have failed, check payment manually and log for investigation
-        //     //     return BadRequest("Payment validation failed");
-        //     // }
-
-        //     DBLogic logic = new DBLogic(_context);
-
-
-        //     if (payFastNotifyViewModel.payment_status == "COMPLETE")
-        //     {
-        //         var exiting_subscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
-        //         exiting_subscription.subscription_status = "Cancelled";
-
-        //         if (exiting_subscription != null)
-        //         {
-
-        //             var DBResponseCancel = logic.PostInsertSubcription(exiting_subscription);
-
-        //             if (DBResponseCancel == "Success")
-        //             {
-        //                 Subscription subscription = new Subscription();
-
-        //                 subscription.subscriptionId = 0;
-        //                 subscription.userprofileid = int.Parse(payFastNotifyViewModel.custom_int1);
-        //                 subscription.package_name = payFastNotifyViewModel.custom_str1;
-        //                 subscription.package_id = int.Parse(payFastNotifyViewModel.custom_int2);
-        //                 subscription.package_price = int.Parse(payFastNotifyViewModel.custom_int3);
-        //                 subscription.start_date = DateTime.Now;
-        //                 subscription.end_date = DateTime.Now.AddMonths(12);
-        //                 subscription.subscription_duration = 365;
-        //                 subscription.subscription_token = payFastNotifyViewModel.token;
-        //                 subscription.subscription_status = "Active";
-
-        //                 var DBResponse = logic.PostInsertSubcription(subscription);
-
-        //                 var message = "Updating...";
-
-        //                 if (DBResponse == "Success")
-        //                 {
-        //                     message = "Successfully updated subscription";
-        //                 }
-        //                 else
-        //                 {
-        //                     message = "Failed to add subscription";
-        //                 }
-
-        //                 return Ok(message);
-        //             }
-        //             else
-        //             {
-
-        //                 return Ok("Did not cancel subscription");
-        //             }
-        //         }
-        //         else
-        //         {
-        //             return Ok("Did not update subscription");
-        //         }
-
-        //     }
-        //     else
-        //     {
-
-        //         return BadRequest("Payment validation failed");
-        //     }
-
-        // }
 
         [HttpPost]
         [Route("Notify")]
@@ -396,32 +291,16 @@ namespace SAWSCore3API.Controllers
             }
 
             if (!int.TryParse(payFastNotifyViewModel.custom_int1, out int userId) ||
-            !int.TryParse(payFastNotifyViewModel.custom_int2, out int packageId) ||
-            !int.TryParse(payFastNotifyViewModel.custom_int3, out int packagePrice))
+                !int.TryParse(payFastNotifyViewModel.custom_int2, out int packageId) ||
+                !int.TryParse(payFastNotifyViewModel.custom_int3, out int packagePrice)
+                )
             {
                 return BadRequest("Invalid integer value in custom fields");
             }
 
             // Cancel existing subscription
 
-            // var userId = int.Parse(payFastNotifyViewModel.custom_int1);
-            var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
-
-            if (activeSubscription == null)
-            {
-                return Ok("Did not find an active subscription");
-            }
-
-            activeSubscription.subscription_status = "Cancelled";
-            activeSubscription.updated_at = DateTime.Now;
-            var cancelResponse = logic.PostInsertSubcription(activeSubscription);
-
-            if (cancelResponse != "Success")
-            {
-                return Ok("Did not cancel subscription");
-            }
-
-            // Add new subscription 
+            var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(userId);
 
             var newSubscription = new Subscription
             {
@@ -437,8 +316,47 @@ namespace SAWSCore3API.Controllers
                 subscription_status = "Active"
             };
 
-            var insertResponse = logic.PostInsertSubcription(newSubscription);
-            var message = insertResponse == "Success" ? "Successfully updated subscription" : "Failed to add subscription";
+            var message = "";
+            var insertResponse = "";
+
+            if (activeSubscription == null)
+            {
+                insertResponse = logic.PostInsertSubcription(newSubscription);
+                message = insertResponse == "Success" ? "Successfully added new subscription" : "Failed to add new subscription";
+
+                return Ok(message);
+            }
+
+            activeSubscription.subscription_status = "Cancelled";
+
+            if (activeSubscription.subscription_token != "")
+            {
+                this.payFastSettings.MerchantId = _configuration.GetValue<string>("payFast:merchant_id");
+                this.payFastSettings.MerchantKey = _configuration.GetValue<string>("payFast:merchant_key");
+                this.payFastSettings.NotifyUrl = _configuration.GetValue<string>("payFast:NotifyUrl");
+                this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
+                bool istesting = _configuration.GetValue<bool>("payFast:isTesting");
+                var subscriptionCancellation = new PayFastSubscription(this.payFastSettings);
+                var result = await subscriptionCancellation.Cancel(activeSubscription.subscription_token, istesting);
+
+                // Cancel payfast subscription
+                if (result.status != "success")
+                {
+                    return Ok("Did not cancel payfast subscription");
+                }
+            }
+
+            insertResponse = logic.PostInsertSubcription(newSubscription);
+
+            if (insertResponse != "Success")
+            {
+                return Ok("Failed to add new subscription");
+            }
+
+            activeSubscription.updated_at = DateTime.Now;
+            var cancelResponse = logic.PostInsertSubcription(activeSubscription);
+
+            message = cancelResponse == "Success" ? "Successfully updated subscription" : "Failed to cancel subscription";
 
             return Ok(message);
         }
