@@ -130,9 +130,9 @@ namespace SAWSCore3API.Controllers
 
             try
             {
-                // this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
+                var passphrase = _configuration.GetValue<string>("payFast:passphrase");
 
-                var recurringRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
+                var recurringRequest = new PayFastRequest(passphrase);
                 var subscriptionUrl = new subscriptionresponse();
 
                 // Merchant Details
@@ -226,7 +226,7 @@ namespace SAWSCore3API.Controllers
                     return BadRequest(new Response { Status = "Error", Message = "No active subscription" });
                 }
 
-                // Do not cancel on payfast if it's a free subscription
+                // Do not cancel on pay-fast if it's a free subscription
                 if (subscriptionId == freeSubscription.subscriptionId)
                 {
                     return Ok(new Response { Status = "Success", Message = "Free subscription active" });
@@ -303,9 +303,29 @@ namespace SAWSCore3API.Controllers
             // var userId = int.Parse(payFastNotifyViewModel.custom_int1);
             var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
 
+            var newSubscription = new Subscription
+                {
+                    subscriptionId = 0,
+                    userprofileid = userId,
+                    package_name = payFastNotifyViewModel.custom_str1,
+                    package_id = packageId,
+                    package_price = packagePrice,
+                    start_date = DateTime.Now,
+                    end_date = DateTime.Now.AddMonths(12),
+                    subscription_duration = 365,
+                    subscription_token = payFastNotifyViewModel.token,
+                    subscription_status = "Active"
+            };
+
+            var message = "";
+            var insertResponse = "";
+
             if (activeSubscription == null)
             {
-                return Ok("Did not find an active subscription");
+                insertResponse = logic.PostInsertSubcription(newSubscription);
+                message = insertResponse == "Success" ? "Successfully added new subscription" : "Failed to add new subscription";
+
+                return Ok(message);
             }
 
             activeSubscription.subscription_status = "Cancelled";
@@ -330,29 +350,7 @@ namespace SAWSCore3API.Controllers
             activeSubscription.updated_at = DateTime.Now;
             var cancelResponse = logic.PostInsertSubcription(activeSubscription);
 
-            if (cancelResponse != "Success")
-            {
-                return Ok("Did not cancel subscription");
-            }
-
-            // Add new subscription 
-
-            var newSubscription = new Subscription
-            {
-                subscriptionId = 0,
-                userprofileid = userId,
-                package_name = payFastNotifyViewModel.custom_str1,
-                package_id = packageId,
-                package_price = packagePrice,
-                start_date = DateTime.Now,
-                end_date = DateTime.Now.AddMonths(12),
-                subscription_duration = 365,
-                subscription_token = payFastNotifyViewModel.token,
-                subscription_status = "Active"
-            };
-
-            var insertResponse = logic.PostInsertSubcription(newSubscription);
-            var message = insertResponse == "Success" ? "Successfully updated subscription" : "Failed to add subscription";
+            message = cancelResponse == "Success" ? "Successfully updated subscription and cancelled existing payfast subscription" : "Failed to cancel subscription";
 
             return Ok(message);
         }
