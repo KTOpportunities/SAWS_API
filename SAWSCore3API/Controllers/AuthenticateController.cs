@@ -96,25 +96,14 @@ namespace SAWSCore3API.Controllers
                 List<string> roles = (List<string>)userRoles;
                 string rolesList = string.Join(",", roles.ToArray());
 
-                //User toReturn = new User();
-
-                //toReturn.Id = user.Id;
-                //toReturn.EmailConfirmed = user.EmailConfirmed;
-                //toReturn.Email = user.Email;
-                //toReturn.UserName = user.UserName;
-                //toReturn.PhoneNumber = user.PhoneNumber;
-                //toReturn.PasswordHash = user.PasswordHash;
-                //toReturn.Fullname = user.Fullname;
-                //toReturn.IDNumber = user.IDNumber;
-                //toReturn.token = new JwtSecurityTokenHandler().WriteToken(token);
-                //toReturn.Gender = user.Gender;
                 //sign in  
                 var signInResult = await signInManager.PasswordSignInAsync(user, appUser.Password, false, false);
-                //userObj = _context.users.Where(d => d.id == usermap.userid).SingleOrDefault();
+
                 if (signInResult.Succeeded)
                 {
 
                     var userProfile = _context.userProfiles
+                        .Include(up => up.Subscription)
                         .FirstOrDefault(up => up.aspuid == user.Id);
 
                     return Ok(new
@@ -129,7 +118,6 @@ namespace SAWSCore3API.Controllers
                         userprofileid = userProfile != null ? userProfile.userprofileid : 0,
                         userprofilestatus = userProfile != null ? "user profile exists" : "missing user profile"
                     });
-                    //statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "200", Message = "Successfully Signed In", DetailDescription = signInResult });
                 }
                 else
                 {
@@ -268,7 +256,7 @@ namespace SAWSCore3API.Controllers
                         resultSubscription = logic.PostInsertSubcription(freeSubscription);
 
                         // return Ok(userProfile);
-                         statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
+                        statusCode = StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Message = "User created successfully", Detail = result });
                     }
 
                     if (!result.Succeeded)
