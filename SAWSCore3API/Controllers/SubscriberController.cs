@@ -300,21 +300,20 @@ namespace SAWSCore3API.Controllers
 
             // Cancel existing subscription
 
-            // var userId = int.Parse(payFastNotifyViewModel.custom_int1);
-            var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(int.Parse(payFastNotifyViewModel.custom_int1));
+            var activeSubscription = logic.GetActiveSubscriptionByUserProfileId(userId);
 
             var newSubscription = new Subscription
-                {
-                    subscriptionId = 0,
-                    userprofileid = userId,
-                    package_name = payFastNotifyViewModel.custom_str1,
-                    package_id = packageId,
-                    package_price = packagePrice,
-                    start_date = DateTime.Now,
-                    end_date = DateTime.Now.AddMonths(12),
-                    subscription_duration = 365,
-                    subscription_token = payFastNotifyViewModel.token,
-                    subscription_status = "Active"
+            {
+                subscriptionId = 0,
+                userprofileid = userId,
+                package_name = payFastNotifyViewModel.custom_str1,
+                package_id = packageId,
+                package_price = packagePrice,
+                start_date = DateTime.Now,
+                end_date = DateTime.Now.AddMonths(12),
+                subscription_duration = 365,
+                subscription_token = payFastNotifyViewModel.token,
+                subscription_status = "Active"
             };
 
             var message = "";
@@ -330,27 +329,34 @@ namespace SAWSCore3API.Controllers
 
             activeSubscription.subscription_status = "Cancelled";
 
-            this.payFastSettings.MerchantId = _configuration.GetValue<string>("payFast:merchant_id");
-            this.payFastSettings.MerchantKey = _configuration.GetValue<string>("payFast:merchant_key");
-            this.payFastSettings.NotifyUrl = _configuration.GetValue<string>("payFast:NotifyUrl");
-            this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
-            bool istesting = _configuration.GetValue<bool>("payFast:isTesting");
-
-            var subscriptionCancellation = new PayFastSubscription(this.payFastSettings);
-
-            // Cancel payfast subscription
-
-            var result = await subscriptionCancellation.Cancel(activeSubscription.subscription_token, istesting);
-
-            if (result.status != "success")
+            if (activeSubscription.subscription_token != "")
             {
-                 return Ok("Did not cancel payfast subscription");
+                this.payFastSettings.MerchantId = _configuration.GetValue<string>("payFast:merchant_id");
+                this.payFastSettings.MerchantKey = _configuration.GetValue<string>("payFast:merchant_key");
+                this.payFastSettings.NotifyUrl = _configuration.GetValue<string>("payFast:NotifyUrl");
+                this.payFastSettings.PassPhrase = _configuration.GetValue<string>("payFast:passphrase");
+                bool istesting = _configuration.GetValue<bool>("payFast:isTesting");
+                var subscriptionCancellation = new PayFastSubscription(this.payFastSettings);
+                var result = await subscriptionCancellation.Cancel(activeSubscription.subscription_token, istesting);
+
+                // Cancel payfast subscription
+                if (result.status != "success")
+                {
+                    return Ok("Did not cancel payfast subscription");
+                }
+            }
+
+            insertResponse = logic.PostInsertSubcription(newSubscription);
+
+            if (insertResponse != "Success")
+            {
+                return Ok("Failed to add new subscription");
             }
 
             activeSubscription.updated_at = DateTime.Now;
             var cancelResponse = logic.PostInsertSubcription(activeSubscription);
 
-            message = cancelResponse == "Success" ? "Successfully updated subscription and cancelled existing payfast subscription" : "Failed to cancel subscription";
+            message = cancelResponse == "Success" ? "Successfully updated subscription" : "Failed to cancel subscription";
 
             return Ok(message);
         }
