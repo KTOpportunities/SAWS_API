@@ -158,25 +158,72 @@ namespace SAWSCore3API.Controllers
             try
             {
                 var records = _context.userProfiles
-               .Where(u => u.created_at >= startDate && u.isdeleted == false && u.userrole == "Subscriber")
-               .GroupBy(u => new { u.userrole, Month = u.created_at.Value.Month, Year = u.created_at.Value.Year })
-               .Select(g => new
-               {
-                   g.Key.userrole,
-                   g.Key.Month,
-                   g.Key.Year,
-                   Count = g.Count()
-               })
-               .ToList();
-
-                var result = records.Select(r => new
+                .Where(u => u.created_at >= startDate && u.isdeleted == false)
+                 .GroupJoin(
+                    _context.Subscriptions,
+                    userProfile => userProfile.userprofileid,
+                    subscription => subscription.userprofileid,
+                    (userProfile, subscriptions) => new { userProfile, subscriptions }
+                )
+                .SelectMany(
+                    us => us.subscriptions.DefaultIfEmpty(),
+                    (us, subscription) => new { 
+                        us.userProfile, 
+                        // subscription
+                        SubscriptionType = us.userProfile.userrole == "Subscriber" && subscription != null 
+                                  ? (subscription.package_name.Contains("Regulated") || subscription.package_name.Contains("Premium")  ? "Subscribed"
+                                    // : subscription.package_name.Contains("Premium") ? "Premium" 
+                                    : subscription.package_name.Contains("Free") ? "Free" 
+                                    : null)
+                                  : null
+                        }
+                )
+                .GroupBy(u => new 
+                    { 
+                        u.userProfile.userrole, 
+                        Month = u.userProfile.created_at.Value.Month, 
+                        Year = u.userProfile.created_at.Value.Year, 
+                        SubscriptionType = u.SubscriptionType ?? (u.userProfile.userrole == "Admin" ? null : "Free"),
+                        // SubscriptionType = u.SubscriptionType, 
+                    }
+                )
+                .Select(g => new
                 {
-                    UserRole = r.userrole,
-                    Month = r.Month,
-                    MonthString = monthNames[r.Month - 1],
-                    Year = r.Year,
-                    Subscriptions = r.Count
-                }).ToList();
+                    g.Key.userrole,
+                    SubscriptionType = g.Key.SubscriptionType ?? "",
+                    g.Key.Month,
+                    g.Key.Year,
+                    Registrations = g.Count()
+                })
+                .ToList();
+
+                var result2 = records.Select(r => new
+                    {
+                        UserRole = r.userrole,
+                        Month = r.Month,
+                        SubscriptionType= r.SubscriptionType,
+                        MonthString = monthNames[r.Month - 1],
+                        Year = r.Year,
+                        Registrations = r.Registrations
+                }).OrderBy(r => r.Year).ThenBy(r => r.Month).ToList();
+
+                var result = records
+                        .GroupBy(r => new { r.Year, r.Month })
+                        .Select(g => new
+                            {
+                                MonthString = monthNames[g.Key.Month - 1],
+                                Month = g.Key.Month,
+                                Year = g.Key.Year,
+                                UserTypes = g.Select(r => new
+                                {
+                                    r.userrole,
+                                    r.SubscriptionType,
+                                    r.Registrations
+                                }).ToList()
+                            })
+                        .OrderBy(g => g.Year)
+                        .ThenBy(g => g.Month)
+                        .ToList();
 
                 return Ok(result);
             }
