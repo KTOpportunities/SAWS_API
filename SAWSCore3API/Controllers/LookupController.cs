@@ -245,21 +245,46 @@ namespace SAWSCore3API.Controllers
 
             try
             {
-                var userSubscriptionsCounts = _context.Subscriptions
-               .Where(u => u.isdeleted == false && u.subscription_status == "Active")
-               .GroupBy(u => new { u.package_name })
-               .Select(g => new
-               {
-                   g.Key.package_name,
-                   Users = g.Count()
-               })
-               .ToList();
+                var userSubscriptionsCounts = _context.userProfiles
+                    .Where( u => u.isdeleted == false)
+                    .GroupJoin(
+                        _context.Subscriptions,
+                        userProfile => userProfile.userprofileid,
+                        subscription => subscription.userprofileid,
+                        (userProfile, subscriptions) => new { userProfile, subscriptions }
+                    )
+                    .SelectMany(
+                        us => us.subscriptions.DefaultIfEmpty(),
+                        (us, subscription) => new { 
+                            us.userProfile,
+                            SubscriptionType = us.userProfile.userrole == "Subscriber" && subscription != null 
+                                    ? (subscription.package_name.Contains("Regulated")  ? "Regulated"
+                                        : subscription.package_name.Contains("Premium") ? "Premium"
+                                        : subscription.package_name.Contains("Free") && subscription.subscription_status == "Active" ? "Free" 
+                                        : null)
+                                    : null
+                            }
+                    )           
+                    .GroupBy(u => new 
+                        { 
+                            u.userProfile.userrole,
+                            SubscriptionType = u.SubscriptionType ?? (u.userProfile.userrole == "Admin" ? "Admin" : null)
+                        }
+                    )
+                    .Select(g => new
+                    {
+                        UserRole = g.Key.userrole,
+                        SubscriptionType = g.Key.SubscriptionType,
+                        Subscriptions = g.Count()
+                    })           
+                    .ToList();
 
-                var totalCount = userSubscriptionsCounts.Sum(usc => usc.Users);
+                var newUserSubscriptionsCounts = userSubscriptionsCounts.Where(g => !(g.UserRole == "Subscriber" && g.SubscriptionType == null));
+                var totalCount = newUserSubscriptionsCounts.Sum(usc => usc.Subscriptions);
 
                 var response = new
                 {
-                    UserSubscriptionCounts = userSubscriptionsCounts,
+                    UserSubscriptionCounts = newUserSubscriptionsCounts,
                     TotalCount = totalCount
                 };
 
