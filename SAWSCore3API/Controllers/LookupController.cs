@@ -183,14 +183,14 @@ namespace SAWSCore3API.Controllers
                         u.userProfile.userrole, 
                         Month = u.userProfile.created_at.Value.Month, 
                         Year = u.userProfile.created_at.Value.Year, 
-                        SubscriptionType = u.SubscriptionType ?? (u.userProfile.userrole == "Admin" ? null : "Free"),
+                        SubscriptionType = u.SubscriptionType ?? (u.userProfile.userrole == "Admin" ? "Admin" : "Free"),
                         // SubscriptionType = u.SubscriptionType, 
                     }
                 )
                 .Select(g => new
                 {
                     g.Key.userrole,
-                    SubscriptionType = g.Key.SubscriptionType ?? "",
+                    SubscriptionType = g.Key.SubscriptionType,
                     g.Key.Month,
                     g.Key.Year,
                     Registrations = g.Count()
